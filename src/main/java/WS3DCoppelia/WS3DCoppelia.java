@@ -32,11 +32,11 @@ public class WS3DCoppelia {
         client = new RemoteAPIClient();
         sim = client.getObject().sim();
         
-//        try {
-//            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
-//        } catch (CborException ex) {
-//            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+        try {
+            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
+        } catch (CborException ex) {
+            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
         
     
@@ -64,6 +64,9 @@ public class WS3DCoppelia {
         for(Agent agt : inWorldAgents){
             agt.run();
         }
+        for(Thing thg : inWorldThings){
+            thg.run();
+        }
     }
     
     public void startSimulation() throws java.io.IOException, CborException{
@@ -86,6 +89,12 @@ public class WS3DCoppelia {
         Agent newAgent = new Agent(sim, x, y);
         inWorldAgents.add(newAgent);
         return newAgent;
+    }
+    
+    public Thing createThing(float x, float y){
+        Thing newThing = new Thing(sim, x, y);
+        inWorldThings.add(newThing);
+        return newThing;
     }
     
 }

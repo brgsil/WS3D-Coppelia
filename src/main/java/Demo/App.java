@@ -5,6 +5,7 @@ package Demo;
 
 import WS3DCoppelia.WS3DCoppelia;
 import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Thing;
 import co.nstant.in.cbor.CborException;
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +21,7 @@ public class App {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
         WS3DCoppelia world = new WS3DCoppelia();
         Agent agt = world.createAgent(1,1);
+        Thing th = world.createThing(1,-1);
         world.startSimulation();
         try {
             Thread.sleep(1);

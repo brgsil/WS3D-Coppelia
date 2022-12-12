@@ -4,10 +4,13 @@
  */
 package WS3DCoppelia.model;
 
+import WS3DCoppelia.util.Constants;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -15,10 +18,13 @@ import java.util.List;
  */
 public class Agent {
     private RemoteAPIObjects._sim sim;
+    private String fuel_id;
     private Long agentHandle;
     private Long targetHandle;
+    
     private List<Float> pos;
     private List<Float> ori;
+    private float fuel;    
     
     private boolean initialized = false;
     
@@ -39,11 +45,31 @@ public class Agent {
             targetHandle = sim.createDummy(0.01);
             sim.setObjectPosition(targetHandle, sim.handle_world, pos);
             
-            Long agentScript = sim.getScript(sim.scripttype_childscript, agentHandle);
-            sim.callScriptFunction("set_uid", agentScript, sim.getObjectUid(agentHandle), sim.getObjectUid(targetHandle));
+            Long agentScriptHandle = sim.getScript(sim.scripttype_childscript, agentHandle);
+            
+            String agentScriptCode = String.format(Constants.BASE_SCRIPT, 
+                                                    sim.getObjectUid(agentHandle), 
+                                                    sim.getObjectUid(targetHandle), 
+                                                    sim.getObjectUid(agentHandle));
+            sim.setScriptStringParam(agentScriptHandle, sim.scriptstringparam_text, agentScriptCode);
+            sim.initScript(agentScriptHandle);
+            
+            fuel_id = "fuel_" + sim.getObjectUid(agentHandle).toString();
             
         } catch (CborException ex) {
             System.out.println("Err");
+        }
+    }
+    
+    public void updateState(){
+        try {
+            fuel = sim.getFloatSignal(fuel_id);
+            
+            pos = sim.getObjectPosition(agentHandle, sim.handle_world);
+            ori = sim.getObjectOrientation(agentHandle, sim.handle_world);
+            
+        } catch (CborException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -52,5 +78,13 @@ public class Agent {
             this.init();
             initialized = true;
         }
+    }
+    
+    public float getFuel(){
+        return fuel;
+    }
+    
+    public float getPitch(){
+        return ori.get(2);
     }
 }
