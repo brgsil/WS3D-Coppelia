@@ -53,4 +53,8 @@ public class Thing {
         }
     }
     
+    public List<Float> getPos(){
+        return pos;
+    }
+    
 }

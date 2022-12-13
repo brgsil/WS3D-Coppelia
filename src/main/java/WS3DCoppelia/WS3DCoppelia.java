@@ -62,7 +62,7 @@ public class WS3DCoppelia {
     
     public void updateState(){
         for(Agent agt : inWorldAgents){
-            agt.run();
+            agt.run(inWorldThings);
         }
         for(Thing thg : inWorldThings){
             thg.run();

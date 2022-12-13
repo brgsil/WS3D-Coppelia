@@ -18,11 +18,11 @@ public class App {
 //        Environment env = new Environment();
 //        env.startSimulation();
 //        AgentMind a = new AgentMind(env);
-        System.out.println("Working Directory = " + System.getProperty("user.dir"));
         WS3DCoppelia world = new WS3DCoppelia();
         Agent agt = world.createAgent(1,1);
         Thing th = world.createThing(1,-1);
         world.startSimulation();
+        agt.moveto(1, -1);
         try {
             Thread.sleep(1);
         } catch (InterruptedException ex) {

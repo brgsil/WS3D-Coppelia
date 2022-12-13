@@ -7,8 +7,12 @@ package WS3DCoppelia.model;
 import WS3DCoppelia.util.Constants;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,8 +29,13 @@ public class Agent {
     private List<Float> pos;
     private List<Float> ori;
     private float fuel;    
+    private List<Thing> thingsInVision =  Collections.synchronizedList(new ArrayList());;
     
     private boolean initialized = false;
+    private double fovAngle = 0.5;
+    private int maxFov = 100;
+    
+    private Map<String, List<Float>> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
     
     public Agent(RemoteAPIObjects._sim sim_, float x, float y){
         sim = sim_;  
@@ -61,7 +70,7 @@ public class Agent {
         }
     }
     
-    public void updateState(){
+    public void updateState(List<Thing> inWorldThings){
         try {
             fuel = sim.getFloatSignal(fuel_id);
             
@@ -71,12 +80,66 @@ public class Agent {
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        List<Thing> thingsSeen = new ArrayList();
+        for(Thing thing : inWorldThings){
+            List<Float> posThing = thing.getPos();
+            float x = posThing.get(0) - pos.get(0);
+            float y = posThing.get(1) - pos.get(1);
+            
+            if (x < maxFov && (-fovAngle*x < y && y < fovAngle*x)){
+                thingsSeen.add(thing);
+            }
+        }
+        
+        synchronized (thingsInVision){
+            thingsInVision.clear();
+            thingsInVision.addAll(thingsSeen);
+        }
+        
     }
     
-    public void run(){
+    public void execCommands(){
+        synchronized (commandQueue){
+            for(String command : commandQueue.keySet()){
+                switch (command){
+                    case "move":
+                        this.execMove(commandQueue.get(command));
+                        break;
+                    default:
+                }
+            }
+        }
+    }
+    
+    public void run(List<Thing> inWorldThings){
         if (!initialized){
             this.init();
             initialized = true;
+        }
+        
+        this.updateState(inWorldThings);
+        this.execCommands();
+    }
+    
+    public void moveto(float x, float y){
+        commandQueue.put("move", Arrays.asList(new Float[]{x, y}));
+    }
+    
+    private void execMove(List<Float> params){
+        try {
+            float goalX = params.get(0);
+            float goalY = params.get(1);
+            double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
+            
+            List<Float> targetOri = new ArrayList<>(ori);
+            targetOri.set(2, (float) goalPitch);
+            
+            sim.setObjectOrientation(targetHandle, sim.handle_world, targetOri);
+            List<Float> targetPos = Arrays.asList(new Float[]{goalX, goalY, (float) 0});
+            sim.setObjectPosition(targetHandle, sim.handle_world, targetPos);
+        } catch (CborException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -86,5 +149,9 @@ public class Agent {
     
     public float getPitch(){
         return ori.get(2);
+    }
+    
+    public List<Thing> getThingsInVision(){
+        return thingsInVision;
     }
 }
