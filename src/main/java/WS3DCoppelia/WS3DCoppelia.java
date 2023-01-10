@@ -6,6 +6,7 @@ package WS3DCoppelia;
 
 import Demo.Environment;
 import WS3DCoppelia.model.*;
+import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.*;
 import java.util.ArrayList;
@@ -32,11 +33,11 @@ public class WS3DCoppelia {
         client = new RemoteAPIClient();
         sim = client.getObject().sim();
         
-        try {
-            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
-        } catch (CborException ex) {
-            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
+//        } catch (CborException ex) {
+//            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
         
     
@@ -91,8 +92,8 @@ public class WS3DCoppelia {
         return newAgent;
     }
     
-    public Thing createThing(float x, float y){
-        Thing newThing = new Thing(sim, x, y);
+    public Thing createThing(ThingsType category, float x, float y){
+        Thing newThing = new Thing(sim, category, x, y);
         inWorldThings.add(newThing);
         return newThing;
     }

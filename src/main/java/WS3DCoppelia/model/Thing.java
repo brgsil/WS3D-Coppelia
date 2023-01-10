@@ -4,8 +4,10 @@
  */
 package WS3DCoppelia.model;
 
+import WS3DCoppelia.util.Constants;
 import static WS3DCoppelia.util.Constants.RED_COLOR;
 import static WS3DCoppelia.util.Constants.THING_SIZE;
+import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.util.Arrays;
@@ -21,25 +23,31 @@ public class Thing {
     private RemoteAPIObjects._sim sim;
     private Long thingHandle;
     private List<Float> pos;
+    public boolean removed = false;
+    
+    private ThingsType category;
     
     private boolean initialized = false;
     
-    public Thing(RemoteAPIObjects._sim sim_, float x, float y){
+    public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, float x, float y){
         sim = sim_;
         pos = Arrays.asList(new Float[]{x, y, (float) 0.05});
+        category = category_;
+        
     }
     
     public void init(){
+        
         try {
-            thingHandle = sim.createPrimitiveShape(sim.primitiveshape_spheroid, THING_SIZE, 0);
+            thingHandle = sim.createPrimitiveShape(category.shape(), THING_SIZE, 0);
             
-            sim.setObjectPosition(thingHandle, sim.handle_world, pos);
+            sim.setObjectPosition(thingHandle, RemoteAPIObjects._sim.handle_world, pos);
             sim.setObjectColor(thingHandle,
                     0,
-                    sim.colorcomponent_ambient_diffuse,
-                    RED_COLOR);
-            Long applesParentHandle = sim.getObject("/apples");
-            sim.setObjectParent(thingHandle, applesParentHandle, true);
+                    RemoteAPIObjects._sim.colorcomponent_ambient_diffuse,
+                    category.color());
+            //Long applesParentHandle = sim.getObject("/apples");
+            //sim.setObjectParent(thingHandle, applesParentHandle, true);
             
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
@@ -55,6 +63,15 @@ public class Thing {
     
     public List<Float> getPos(){
         return pos;
+    }
+    
+    public boolean isFood() { return category == ThingsType.PFOOD || category == ThingsType.NPFOOD; }
+    
+    public float energy() { return category.energy(); }
+    
+    public void remove() throws CborException{
+        sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
+        removed = true;
     }
     
 }

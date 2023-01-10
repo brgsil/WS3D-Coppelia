@@ -6,6 +6,7 @@ package Demo;
 import WS3DCoppelia.WS3DCoppelia;
 import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.model.Thing;
+import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import java.io.IOException;
 import java.util.List;
@@ -20,13 +21,29 @@ public class App {
 //        AgentMind a = new AgentMind(env);
         WS3DCoppelia world = new WS3DCoppelia();
         Agent agt = world.createAgent(1,1);
-        Thing th = world.createThing(1,-1);
+        Thing th = world.createThing(ThingsType.PFOOD, 1,-1);
         world.startSimulation();
-        agt.moveto(1, -1);
+        agt.rotate();
         try {
-            Thread.sleep(1);
+            Thread.sleep(30000);
         } catch (InterruptedException ex) {
             Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
         }
+        agt.moveto(1, -1);
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("EAT");
+        System.out.println(agt.getFuel());
+        agt.eatIt(th);
+        
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println(agt.getFuel());
     }
 }

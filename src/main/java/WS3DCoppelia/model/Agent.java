@@ -34,8 +34,9 @@ public class Agent {
     private boolean initialized = false;
     private double fovAngle = 0.5;
     private int maxFov = 100;
+    private boolean rotate = false;
     
-    private Map<String, List<Float>> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
+    private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
     
     public Agent(RemoteAPIObjects._sim sim_, float x, float y){
         sim = sim_;  
@@ -83,12 +84,14 @@ public class Agent {
         
         List<Thing> thingsSeen = new ArrayList();
         for(Thing thing : inWorldThings){
-            List<Float> posThing = thing.getPos();
-            float x = posThing.get(0) - pos.get(0);
-            float y = posThing.get(1) - pos.get(1);
-            
-            if (x < maxFov && (-fovAngle*x < y && y < fovAngle*x)){
-                thingsSeen.add(thing);
+            if (!thing.removed){
+                List<Float> posThing = thing.getPos();
+                float x = posThing.get(0) - pos.get(0);
+                float y = posThing.get(1) - pos.get(1);
+
+                if (x < maxFov && (-fovAngle*x < y && y < fovAngle*x)){
+                    thingsSeen.add(thing);
+                }
             }
         }
         
@@ -97,6 +100,9 @@ public class Agent {
             thingsInVision.addAll(thingsSeen);
         }
         
+        if (rotate)
+            execRotate();
+        
     }
     
     public void execCommands(){
@@ -104,11 +110,19 @@ public class Agent {
             for(String command : commandQueue.keySet()){
                 switch (command){
                     case "move":
-                        this.execMove(commandQueue.get(command));
+                        this.execMove((List<Float>) commandQueue.get(command));
+                        break;
+                    case "eat":
+                        this.execEatIt((Thing) commandQueue.get(command));
+                        break;
+                    case "rotate":
+                        this.execRotate();
+                        rotate = true;
                         break;
                     default:
                 }
             }
+            commandQueue.clear();
         }
     }
     
@@ -126,6 +140,15 @@ public class Agent {
         commandQueue.put("move", Arrays.asList(new Float[]{x, y}));
     }
     
+    public void eatIt(Thing thing){
+        if (thing.isFood())
+            commandQueue.put("eat", thing);
+    }
+    
+    public void rotate(){
+        commandQueue.put("rotate", "");
+    }
+    
     private void execMove(List<Float> params){
         try {
             float goalX = params.get(0);
@@ -136,11 +159,41 @@ public class Agent {
             targetOri.set(2, (float) goalPitch);
             
             sim.setObjectOrientation(targetHandle, sim.handle_world, targetOri);
+            sim.setObjectOrientation(agentHandle, sim.handle_world, targetOri);
             List<Float> targetPos = Arrays.asList(new Float[]{goalX, goalY, (float) 0});
             sim.setObjectPosition(targetHandle, sim.handle_world, targetPos);
+            rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private void execEatIt(Thing food){
+        try {
+            food.remove();
+            float fuel_ = sim.getFloatSignal(fuel_id);
+            float new_fuel = fuel_ + food.energy() > 1000 ? 1000 : fuel_ + food.energy();
+            sim.setFloatSignal(fuel_id, new_fuel);
+            
+            rotate = false;
+        } catch (CborException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void execRotate(){
+        try {
+            List<Float> targetPos = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
+        
+            sim.setObjectPosition(targetHandle, agentHandle, targetPos);
+        
+            List<Float> euler = sim.getObjectOrientation(targetHandle, agentHandle);
+            euler.set(2, (float) 3);
+            sim.setObjectOrientation(targetHandle, agentHandle, euler);
+        } catch (CborException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
     
     public float getFuel(){
@@ -149,6 +202,10 @@ public class Agent {
     
     public float getPitch(){
         return ori.get(2);
+    }
+    
+    public List<Float> getPosition(){
+        return pos;
     }
     
     public List<Thing> getThingsInVision(){

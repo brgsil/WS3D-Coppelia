@@ -4,6 +4,7 @@
  */
 package WS3DCoppelia.util;
 
+import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +17,12 @@ public class Constants {
     public static final List<Float> THING_SIZE = Arrays.asList(new Float[]{(float) 0.1, (float) 0.1, (float) 0.1});
     
     public static final List<Float> RED_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.25, (float) 0.25});
+    public static final List<Float> GREEN_COLOR = Arrays.asList(new Float[]{(float) 0.25, (float) 0.95, (float) 0.25});
+    public static final List<Float> BLUE_COLOR = Arrays.asList(new Float[]{(float) 0.25, (float) 0.25, (float) 0.95});
+    public static final List<Float> YELLOW_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.95, (float) 0.25});
+    public static final List<Float> MAGENTA_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.25, (float) 0.95});
+    public static final List<Float> WHITE_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.95, (float) 0.95});
+    public static final List<Float> ORANGE_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.65, (float) 0.25});
     
     public static String BASE_SCRIPT = "#python\n"
             + "\n"
@@ -66,4 +73,28 @@ public class Constants {
             + "    pass\n"
             + "\n";
 
+    public enum ThingsType{
+        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300),
+        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, ORANGE_COLOR, 150), 
+        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, RED_COLOR, 0),
+        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, GREEN_COLOR, 0),
+        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, BLUE_COLOR, 0),
+        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, YELLOW_COLOR, 0),
+        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, MAGENTA_COLOR, 0),
+        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, WHITE_COLOR, 0);
+        
+        private final int shape;
+        private final List<Float> color;
+        private final float energy;
+        
+        ThingsType(int shape, List<Float> color, float energy){
+            this.shape = shape;
+            this.color = color;
+            this.energy = energy;
+        }
+        
+        public int shape() { return shape; }
+        public List<Float> color() { return color; }
+        public float energy() { return energy; }
+    }
 }
