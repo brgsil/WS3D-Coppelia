@@ -24,6 +24,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import Demo.memory.CreatureInnerSense;
 import Demo.Environment;
+import WS3DCoppelia.model.Agent;
 import co.nstant.in.cbor.CborException;
 
 
@@ -36,11 +37,11 @@ import co.nstant.in.cbor.CborException;
 public class InnerSense extends Codelet {
 
 	private Memory innerSenseMO;
-        private Environment env;
+        private Agent creature;
         private CreatureInnerSense cis;
 
-	public InnerSense(Environment env_) {
-		env = env_;
+	public InnerSense(Agent c) {
+                creature = c;
                 this.name = "InnerSense";
 	}
 	@Override
@@ -51,9 +52,9 @@ public class InnerSense extends Codelet {
 	
 	public void proc() {
             //env.updateState();
-            cis.position = env.getAgentPosition();
-            cis.pitch = env.getAgentPitch();
-            cis.fuel = env.getFuel();
+            cis.position = creature.getPosition();
+            cis.pitch = creature.getPitch();
+            cis.fuel = creature.getFuel();
 	}
         
         @Override

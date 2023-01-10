@@ -20,6 +20,8 @@
 package Demo.codelets.sensors;
 
 import Demo.Environment;
+import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -36,11 +38,11 @@ import java.util.List;
 public class Vision extends Codelet{
     
 	private Memory visionMO;
-        private Environment env;
+        private Agent creature;
 
 
-	public Vision(Environment env_) {
-            env = env_;		
+	public Vision(Agent c) {
+            creature = c;		
             this.name = "Vision";
 	}
 
@@ -53,7 +55,7 @@ public class Vision extends Codelet{
 	public void proc() {
              
              synchronized (visionMO) {
-                List<Long> lt = env.getApplesInVision();
+                List<Thing> lt = creature.getThingsInVision();
                 visionMO.setI(lt);
              }
 	}//end proc()

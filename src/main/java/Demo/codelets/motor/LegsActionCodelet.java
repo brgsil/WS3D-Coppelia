@@ -21,6 +21,7 @@ package Demo.codelets.motor;
 
 
 import Demo.Environment;
+import WS3DCoppelia.model.Agent;
 import org.json.JSONObject;
 
 import br.unicamp.cst.core.entities.Codelet;
@@ -42,13 +43,13 @@ public class LegsActionCodelet extends Codelet{
 	private double previousTargetx=0;
 	private double previousTargety=0;
 	private String previousLegsAction="";
-        private Environment env;
+        private Agent creature;
         double old_angle = 0;
         int k=0;
         static Logger log = Logger.getLogger(LegsActionCodelet.class.getCanonicalName());
 
-	public LegsActionCodelet(Environment env_) {
-		env = env_;
+	public LegsActionCodelet(Agent c) {
+                creature = c;
                 this.name = "LegsActionCodelet";
 	}
 	
@@ -76,7 +77,7 @@ public class LegsActionCodelet extends Codelet{
                                                //if (!comm.equals(previousLegsAction)) 
                                                     log.info("Sending Forage command to agent");
                                                 try {  
-                                                    env.rotate();    
+                                                    creature.rotate();    
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
@@ -90,7 +91,7 @@ public class LegsActionCodelet extends Codelet{
 					    if (!comm.equals(previousLegsAction))
                                                 log.info("Sending move command to agent: ["+targetx+","+targety+"]");
                                             try {
-                                                env.moveTo((float) targetx, (float) targety);
+                                                creature.moveTo((float) targetx, (float) targety);
                                             } catch(Exception e) {
                                                 e.printStackTrace();
                                             }
@@ -101,7 +102,7 @@ public class LegsActionCodelet extends Codelet{
 				    } else {
 					log.info("Sending stop command to agent");
                                         try {
-                                             env.stopAgent();
+                                             creature.stop();
                                         } catch(Exception e) {
                                             e.printStackTrace();
                                         }  

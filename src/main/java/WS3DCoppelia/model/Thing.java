@@ -73,5 +73,10 @@ public class Thing {
         sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
         removed = true;
     }
+
+    public List<Float> getRelativePos(Long sourceHandle) throws CborException {
+        List<Float> relPos = sim.getObjectPose(thingHandle, sourceHandle);
+        return relPos;
+    }
     
 }

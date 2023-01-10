@@ -62,11 +62,11 @@ public class WS3DCoppelia {
     }
     
     public void updateState(){
-        for(Agent agt : inWorldAgents){
-            agt.run(inWorldThings);
-        }
         for(Thing thg : inWorldThings){
             thg.run();
+        }
+        for(Agent agt : inWorldAgents){
+            agt.run(inWorldThings);
         }
     }
     
@@ -79,7 +79,7 @@ public class WS3DCoppelia {
         
         Timer t = new Timer();
         WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
-        t.scheduleAtFixedRate(tt, 100, 200);
+        t.scheduleAtFixedRate(tt, 100, 100);
     }
     
     public void stopSimulation() throws CborException{

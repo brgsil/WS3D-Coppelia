@@ -30,6 +30,8 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import Demo.memory.CreatureInnerSense;
+import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Thing;
 
 public class GoToClosestApple extends Codelet {
 
@@ -38,10 +40,10 @@ public class GoToClosestApple extends Codelet {
 	private MemoryContainer legsMO;
 	private int creatureBasicSpeed;
 	private double reachDistance;
-        private Environment env;
+        private Agent creature;
 
-	public GoToClosestApple(int creatureBasicSpeed, double reachDistance, Environment env_) {
-                env = env_;
+	public GoToClosestApple(int creatureBasicSpeed, double reachDistance, Agent c) {
+                creature = c;
 		this.creatureBasicSpeed=creatureBasicSpeed;
 		this.reachDistance=reachDistance;
                 this.name = "GoToClosestApple";
@@ -60,7 +62,7 @@ public class GoToClosestApple extends Codelet {
 		//If far, go towards it
 		//If close, stops
 
-                Long closestApple = (Long) closestAppleMO.getI();
+                Thing closestApple = (Thing) closestAppleMO.getI();
                 CreatureInnerSense cis = (CreatureInnerSense) selfInfoMO.getI();
 
 		if(closestApple != null)
@@ -68,8 +70,8 @@ public class GoToClosestApple extends Codelet {
 			float appleX=0;
 			float appleY=0;
 			try {
-                                appleX = env.getApplePosition(closestApple).get(0);
-                                appleY = env.getApplePosition(closestApple).get(1);
+                                appleX = closestApple.getPos().get(0);
+                                appleY = closestApple.getPos().get(1);
 
 			} catch (Exception e) {
 				e.printStackTrace();

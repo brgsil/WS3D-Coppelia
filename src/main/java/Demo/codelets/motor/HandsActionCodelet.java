@@ -21,12 +21,17 @@ package Demo.codelets.motor;
 
 
 import Demo.Environment;
+import static Demo.codelets.motor.LegsActionCodelet.log;
+import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Thing;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -41,13 +46,13 @@ import java.util.logging.Logger;
 public class HandsActionCodelet extends Codelet{
 
 	private Memory handsMO;
-	private String previousHandsAction="";
-        private Environment env;
+	private String previousHandsCommand="";
+        private Agent creature;
         private Random r = new Random();
         static Logger log = Logger.getLogger(HandsActionCodelet.class.getCanonicalName());
 
-	public HandsActionCodelet(Environment env_) {
-                env = env_;
+	public HandsActionCodelet(Agent c) {
+                creature = c;
                 this.name = "HandsActionCodelet";
 	}
 	
@@ -57,64 +62,19 @@ public class HandsActionCodelet extends Codelet{
 	}
 	public void proc() {
             
-                String command = (String) handsMO.getI();
-
-		if(!command.equals("") && (!command.equals(previousHandsAction))){
-			JSONObject jsonAction;
-			try {
-				jsonAction = new JSONObject(command);
-				if(jsonAction.has("ACTION") && jsonAction.has("OBJECT")){
-					String action=jsonAction.getString("ACTION");
-					Long objectID=jsonAction.getLong("OBJECT");
-//					if(action.equals("PICKUP")){
-//                                                try {
-//                                                 c.putInSack(objectName);
-//                                                } catch (Exception e) {
-//                                                    
-//                                                } 
-//						log.info("Sending Put In Sack command to agent:****** "+objectName+"**********");							
-//						
-//						
-//						//							}
-//					}
-					if(action.equals("EATIT")){
-                                                try {
-                                                 env.eatApple(objectID);
-                                                } catch (Exception e) {
-                                                    
-                                                }
-						log.info("Sending Eat command to agent:****** "+objectID+"**********");							
-					}
-//					if(action.equals("BURY")){
-//                                                try {
-//                                                 c.hideIt(objectName);
-//                                                } catch (Exception e) {
-//                                                    
-//                                                }
-//						log.info("Sending Bury command to agent:****** "+objectName+"**********");							
-//					}
-				}
-//                                else if (jsonAction.has("ACTION")) {
-//                                    int x=0,y=0;
-//                                    String action=jsonAction.getString("ACTION");
-//                                    if(action.equals("FORAGE")){
-//                                                try {
-//                                                      x = r.nextInt(600);
-//                                                      y = r.nextInt(800);
-//                                                 c.moveto(1, x,y );
-//                                                } catch (Exception e) {
-//                                                    
-//                                                }
-//						System.out.println("Sending Forage command to agent:****** ("+x+","+y+") **********");							
-//					}
-//                                }
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+                List<Object> action = (List<Object>) handsMO.getI();
+                String command = (String) action.get(0);
+		if(!command.equals("") && (!command.equals(previousHandsCommand))){
+                    if(command.equals("EATIT")){
+                        Thing food = (Thing) action.get(1);
+                        creature.eatIt(food);	
+                        log.info("Sending Eat It command to agent");
+                    }
 
 		}
 //		System.out.println("OK_hands");
-		previousHandsAction = (String) handsMO.getI();
+		List<Object> previousAction = (List<Object>) handsMO.getI();
+                previousHandsCommand = (String) action.get(0);
 	}//end proc
 
     @Override

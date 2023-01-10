@@ -19,6 +19,7 @@
 
 package Demo.codelets.perception;
 
+import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -54,19 +55,19 @@ public class AppleDetector extends Codelet {
 
 	@Override
 	public void proc() {
-            CopyOnWriteArrayList<Long> vision;
-            List<Long> known;
+            CopyOnWriteArrayList<Thing> vision;
+            List<Thing> known;
             synchronized (visionMO) {
                //vision = Collections.synchronizedList((List<Thing>) visionMO.getI());
-               vision = new CopyOnWriteArrayList((List<Long>) visionMO.getI());    
-               known = Collections.synchronizedList((List<Long>) knownApplesMO.getI());
+               vision = new CopyOnWriteArrayList((List<Thing>) visionMO.getI());    
+               known = Collections.synchronizedList((List<Thing>) knownApplesMO.getI());
                //known = new CopyOnWriteArrayList((List<Thing>) knownApplesMO.getI());    
                synchronized(vision) {
-                 for (Long t : vision) {
+                 for (Thing t : vision) {
                     boolean found = false;
                     synchronized(known) {
-                       CopyOnWriteArrayList<Long> myknown = new CopyOnWriteArrayList<>(known);
-                       for (Long e : myknown)
+                       CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
+                       for (Thing e : myknown)
                           if (Objects.equals(t, e)) {
                             found = true;
                             break;

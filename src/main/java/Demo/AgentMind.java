@@ -22,6 +22,7 @@ package Demo;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
+import WS3DCoppelia.model.Thing;
 import Demo.codelets.behaviors.EatClosestApple;
 import Demo.codelets.behaviors.Forage;
 import Demo.codelets.behaviors.GoToClosestApple;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import Demo.memory.CreatureInnerSense;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -69,39 +72,40 @@ public class AgentMind extends Mind {
                 //Initialize Memory Objects
                 legsMO=createMemoryContainer("LEGS");
                 registerMemory(legsMO,"Motor");
-		handsMO=createMemoryObject("HANDS", "");
+                List<Object> hand_action = Collections.synchronizedList(new ArrayList<Object>());
+		handsMO=createMemoryObject("HANDS", hand_action);
                 registerMemory(handsMO,"Motor");
-                List<Long> vision_list = Collections.synchronizedList(new ArrayList<Long>());
+                List<Thing> vision_list = Collections.synchronizedList(new ArrayList<Thing>());
 		visionMO=createMemoryObject("VISION",vision_list);
                 registerMemory(visionMO,"Sensory");
                 CreatureInnerSense cis = new CreatureInnerSense();
 		innerSenseMO=createMemoryObject("INNER", cis);
                 registerMemory(innerSenseMO,"Sensory");
-                Long closestApple = null;
+                Thing closestApple = null;
                 closestAppleMO=createMemoryObject("CLOSEST_APPLE", closestApple);
                 registerMemory(closestAppleMO,"Working");
-                List<Long> knownApples = Collections.synchronizedList(new ArrayList<Long>());
+                List<Thing> knownApples = Collections.synchronizedList(new ArrayList<Thing>());
                 knownApplesMO=createMemoryObject("KNOWN_APPLES", knownApples);
                 registerMemory(knownApplesMO,"Working");
                 
  		// Create Sensor Codelets	
-		Codelet vision=new Vision(env);
+		Codelet vision=new Vision(env.creature);
 		vision.addOutput(visionMO);
                 insertCodelet(vision); //Creates a vision sensor
                 registerCodelet(vision,"Sensory");
 		
-		Codelet innerSense=new InnerSense(env);
+		Codelet innerSense=new InnerSense(env.creature);
 		innerSense.addOutput(innerSenseMO);
                 insertCodelet(innerSense); //A sensor for the inner state of the creature
                 registerCodelet(innerSense,"Sensory");
 		
 		// Create Actuator Codelets
-		Codelet legs=new LegsActionCodelet(env);
+		Codelet legs=new LegsActionCodelet(env.creature);
 		legs.addInput(legsMO);
                 insertCodelet(legs);
                 registerCodelet(legs,"Motor");
 
-		Codelet hands=new HandsActionCodelet(env);
+		Codelet hands=new HandsActionCodelet(env.creature);
 		hands.addInput(handsMO);
                 insertCodelet(hands);
                 registerCodelet(hands,"Motor");
@@ -113,7 +117,7 @@ public class AgentMind extends Mind {
                 insertCodelet(ad);
                 registerCodelet(ad,"Perception");
                 
-		Codelet closestAppleDetector = new ClosestAppleDetector(env);
+		Codelet closestAppleDetector = new ClosestAppleDetector(env.creature);
 		closestAppleDetector.addInput(knownApplesMO);
 		closestAppleDetector.addInput(innerSenseMO);
 		closestAppleDetector.addOutput(closestAppleMO);
@@ -121,7 +125,7 @@ public class AgentMind extends Mind {
                 registerCodelet(closestAppleDetector,"Perception");
 		
 		// Create Behavior Codelets
-		Codelet goToClosestApple = new GoToClosestApple(creatureBasicSpeed,reachDistance, env);
+		Codelet goToClosestApple = new GoToClosestApple(creatureBasicSpeed,reachDistance, env.creature);
 		goToClosestApple.addInput(closestAppleMO);
 		goToClosestApple.addInput(innerSenseMO);
 		goToClosestApple.addOutput(legsMO);
@@ -130,7 +134,7 @@ public class AgentMind extends Mind {
                 
                 behavioralCodelets.add(goToClosestApple);
 		
-		Codelet eatApple=new EatClosestApple(reachDistance, env);
+		Codelet eatApple=new EatClosestApple(reachDistance);
 		eatApple.addInput(closestAppleMO);
 		eatApple.addInput(innerSenseMO);
 		eatApple.addOutput(handsMO);

@@ -28,6 +28,8 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import java.util.Arrays;
 import java.util.Collections;
 import Demo.memory.CreatureInnerSense;
+import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Thing;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -40,12 +42,12 @@ public class ClosestAppleDetector extends Codelet {
 	private Memory knownMO;
 	private Memory closestAppleMO;
 	private Memory innerSenseMO;
-        private Environment env;
+        private Agent creature;
 	
-        private List<Long> known;
+        private List<Thing> known;
 
-	public ClosestAppleDetector(Environment env_) {
-            env = env_;
+	public ClosestAppleDetector(Agent c) {
+            creature = c;
             this.name = "ClosestAppleDetector";
 	}
 
@@ -58,23 +60,23 @@ public class ClosestAppleDetector extends Codelet {
 	}
 	@Override
 	public void proc() {
-                Long closest_apple=null;
-                known = Collections.synchronizedList((List<Long>) knownMO.getI());
+                Thing closest_apple=null;
+                known = Collections.synchronizedList((List<Thing>) knownMO.getI());
                 CreatureInnerSense cis = (CreatureInnerSense) innerSenseMO.getI();
                 synchronized(known) {
 		   if(known.size() != 0){
 			//Iterate over objects in vision, looking for the closest apple
-                        CopyOnWriteArrayList<Long> myknown = new CopyOnWriteArrayList<>(known);
-                        for (Long t : myknown) {
+                        CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
+                        for (Thing t : myknown) {
                                 if(closest_apple == null){    
                                         closest_apple = t;
                                 }
                                 else {
                                         List<Float> applePos = Arrays.asList(new Float[]{(float)0, (float)0});
-                                        applePos = env.getApplePosition(t);
+                                        applePos = t.getPos();
 
                                         List<Float> closest_applePos = Arrays.asList(new Float[]{(float)0, (float)0});
-                                        closest_applePos = env.getApplePosition(closest_apple);
+                                        closest_applePos = closest_apple.getPos();
                                         double Dnew = calculateDistance(applePos.get(0), applePos.get(1), cis.position.get(0), cis.position.get(1));
                                         double Dclosest= calculateDistance(closest_applePos.get(0), closest_applePos.get(1), cis.position.get(0), cis.position.get(1));
                                         if(Dnew<Dclosest){
