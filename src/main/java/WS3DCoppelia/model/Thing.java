@@ -65,6 +65,10 @@ public class Thing {
         return pos;
     }
     
+    public ThingsType thingType(){
+        return category;
+    }
+    
     public boolean isFood() { return category == ThingsType.PFOOD || category == ThingsType.NPFOOD; }
     
     public float energy() { return category.energy(); }

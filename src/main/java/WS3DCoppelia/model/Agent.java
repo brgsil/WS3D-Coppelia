@@ -29,7 +29,8 @@ public class Agent {
     private List<Float> pos;
     private List<Float> ori;
     private float fuel;    
-    private List<Thing> thingsInVision =  Collections.synchronizedList(new ArrayList());;
+    private List<Thing> thingsInVision =  Collections.synchronizedList(new ArrayList());
+    private Bag bag = new Bag();
     
     private boolean initialized = false;
     private double fovAngle = 0.5;
@@ -126,6 +127,9 @@ public class Agent {
                         this.execRotate();
                         rotate = true;
                         break;
+                    case "sackIt":
+                        this.execSackIt((Thing) commandQueue.get(command));
+                        break;
                     case "stop":
                         this.execStop();
                         break;
@@ -161,6 +165,10 @@ public class Agent {
     
     public void stop(){
         commandQueue.put("stop", "");
+    }
+    
+    public void sackIt(Thing thing){
+        commandQueue.put("stop", thing);
     }
     
     private void execMove(List<Float> params){
@@ -225,6 +233,15 @@ public class Agent {
 
     }
     
+    private void execSackIt(Thing thing){
+        try {
+            thing.remove();
+            bag.insertItem(thing.thingType(), 1);
+        } catch (CborException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public float getFuel(){
         return fuel;
     }
@@ -245,5 +262,9 @@ public class Agent {
         return Math.hypot( Math.abs(pos.get(0) - x),
                 Math.abs(pos.get(1) - y))
                 <= Constants.AGENT_OCCUPANCY_RADIUS;
+    }
+    
+    public Bag getBag(){
+        return bag;
     }
 }
