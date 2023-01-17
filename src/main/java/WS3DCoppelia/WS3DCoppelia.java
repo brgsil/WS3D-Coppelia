@@ -11,11 +11,13 @@ import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -25,8 +27,8 @@ public class WS3DCoppelia {
     
     private RemoteAPIClient client;
     private RemoteAPIObjects._sim sim;
-    private List<Agent> inWorldAgents = new ArrayList();
-    private List<Thing> inWorldThings = new ArrayList();
+    private List<Agent> inWorldAgents = Collections.synchronizedList(new ArrayList());
+    private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
     
     
     public WS3DCoppelia(){
@@ -62,11 +64,17 @@ public class WS3DCoppelia {
     }
     
     public void updateState(){
-        for(Thing thg : inWorldThings){
-            thg.run();
+        synchronized(inWorldThings){
+            List<Thing> excludedThings = inWorldThings.stream().filter(t->t.removed).collect(Collectors.toList());
+            inWorldThings.removeAll(excludedThings);
+            for(Thing thg : inWorldThings){
+                thg.run();
+            }
         }
-        for(Agent agt : inWorldAgents){
-            agt.run(inWorldThings);
+        synchronized(inWorldAgents){
+            for(Agent agt : inWorldAgents){
+                agt.run(inWorldThings);
+            }
         }
     }
     
@@ -88,14 +96,33 @@ public class WS3DCoppelia {
     
     public Agent createAgent(float x, float y){
         Agent newAgent = new Agent(sim, x, y);
-        inWorldAgents.add(newAgent);
+        synchronized(inWorldAgents){
+            inWorldAgents.add(newAgent);
+        }
         return newAgent;
     }
     
     public Thing createThing(ThingsType category, float x, float y){
         Thing newThing = new Thing(sim, category, x, y);
-        inWorldThings.add(newThing);
+        synchronized (inWorldThings) {
+            inWorldThings.add(newThing);
+        }
         return newThing;
+    }
+    
+    public boolean isOccupied(float x, float y){
+        synchronized(inWorldThings){
+            for(Thing thg : inWorldThings){
+                if (thg.isInOccupancyArea(x, y)) return true;
+            }
+        }
+        synchronized(inWorldAgents){
+            for(Agent agt : inWorldAgents){
+                if (agt.isInOccupancyArea(x, y)) return true;
+            }
+        }
+        
+        return false;
     }
     
 }

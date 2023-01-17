@@ -72,6 +72,25 @@ public class Constants {
             + "    # do some clean-up here\n"
             + "    pass\n"
             + "\n";
+   
+    public static double THING_OCCUPANCY_RADIUS = 0.15;
+    public static double AGENT_OCCUPANCY_RADIUS = 0.2;
+    
+    /**
+     * Resources Generator package constants
+     */
+    public static final int TIMEFRAME = 3; //default in minutes
+    ////////Poisson distribution
+    //the average rate of generation of each kind of crystal:
+    public static final double redLAMBDA = 1;
+    public static final double greenLAMBDA = 0.4;
+    public static final double blueLAMBDA = 0.5;
+    public static final double yellowLAMBDA = 0.7;
+    public static final double magentaLAMBDA = 0.3;
+    public static final double whiteLAMBDA = 0.2;
+    public static final double pFoodLAMBDA = 1;
+    public static final double npFoodLAMBDA = 0.7;
+    public static double SECURITY = 30; //empiric
 
     public enum ThingsType{
         PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300),

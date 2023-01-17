@@ -98,7 +98,7 @@ public class EatClosestApple extends Codelet {
                                         activation=1.0;
                                         DestroyClosestApple();
 				}else{
-                                        action.add("");
+                                        action.add("NOTHING");
 					handsMO.setI(action);	//nothing
                                         activation=0.0;
 				}
@@ -109,7 +109,7 @@ public class EatClosestApple extends Codelet {
 				e.printStackTrace();
 			}
 		}else{
-                        action.add("");
+                        action.add("NOTHING");
                         handsMO.setI(action);	//nothing
                         activation=0.0;
 		}

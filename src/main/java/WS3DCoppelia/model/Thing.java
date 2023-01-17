@@ -79,4 +79,14 @@ public class Thing {
         return relPos;
     }
     
+    public boolean isInOccupancyArea(float x, float y){
+        return Math.hypot( Math.abs(pos.get(0) - x),
+                Math.abs(pos.get(1) - y))
+                <= Constants.THING_OCCUPANCY_RADIUS;
+    }
+    
+    public boolean isInitialized(){
+        return initialized;
+    }
+    
 }

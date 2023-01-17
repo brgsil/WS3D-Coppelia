@@ -74,6 +74,7 @@ public class Agent {
     public void updateState(List<Thing> inWorldThings){
         try {
             fuel = sim.getFloatSignal(fuel_id);
+            System.out.println(fuel);
             
             pos = sim.getObjectPosition(agentHandle, sim.handle_world);
             ori = sim.getObjectOrientation(agentHandle, sim.handle_world);
@@ -83,20 +84,22 @@ public class Agent {
         }
         
         List<Thing> thingsSeen = new ArrayList();
-        try {
-            for(Thing thing : inWorldThings){
-                if (!thing.removed){
-                    List<Float> posThing = thing.getRelativePos(agentHandle);
-                    float x = posThing.get(0) - pos.get(0);
-                    float y = posThing.get(1) - pos.get(1);
-                    
-                    if (x < maxFov && (-fovAngle*x < y && y < fovAngle*x)){
-                        thingsSeen.add(thing);
+        synchronized (inWorldThings) {
+            try {
+                for(Thing thing : inWorldThings){
+                    if (!thing.removed && thing.isInitialized()){
+                        List<Float> posThing = thing.getRelativePos(agentHandle);
+                        float x = posThing.get(0);
+                        float y = posThing.get(1);
+
+                        if (x < maxFov && (-fovAngle*x < y && y < fovAngle*x)){
+                            thingsSeen.add(thing);
+                        }
                     }
                 }
+             } catch (CborException ex) {
+                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
             }
-         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         synchronized (thingsInVision){
@@ -236,5 +239,11 @@ public class Agent {
     
     public List<Thing> getThingsInVision(){
         return thingsInVision;
+    }
+
+    public boolean isInOccupancyArea(float x, float y) {
+        return Math.hypot( Math.abs(pos.get(0) - x),
+                Math.abs(pos.get(1) - y))
+                <= Constants.AGENT_OCCUPANCY_RADIUS;
     }
 }

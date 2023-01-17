@@ -63,18 +63,20 @@ public class HandsActionCodelet extends Codelet{
 	public void proc() {
             
                 List<Object> action = (List<Object>) handsMO.getI();
-                String command = (String) action.get(0);
-		if(!command.equals("") && (!command.equals(previousHandsCommand))){
-                    if(command.equals("EATIT")){
-                        Thing food = (Thing) action.get(1);
-                        creature.eatIt(food);	
-                        log.info("Sending Eat It command to agent");
-                    }
+                if(action.size() > 0){
+                    String command = (String) action.get(0);
+                    if(!command.equals("NOTHING") && (!command.equals(previousHandsCommand))){
+                        if(command.equals("EATIT")){
+                            Thing food = (Thing) action.get(1);
+                            creature.eatIt(food);	
+                            log.info("Sending Eat It command to agent");
+                        }
 
-		}
-//		System.out.println("OK_hands");
-		List<Object> previousAction = (List<Object>) handsMO.getI();
-                previousHandsCommand = (String) action.get(0);
+                    }
+                    //System.out.println("OK_hands");
+                    List<Object> previousAction = (List<Object>) handsMO.getI();
+                    previousHandsCommand = (String) action.get(0);
+                }
 	}//end proc
 
     @Override
