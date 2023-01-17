@@ -28,7 +28,7 @@ public class Constants {
             + "\n"
             + "from math import sqrt\n"
             + "\n"
-            + "lin_vel = 0.01 # m/s\n"
+            + "lin_vel = 0.02 # m/s\n"
             + "ang_vel = 0.02  # rad/s\n"
             + "agent_uid = %d\n"
             + "target_uid = %d\n"

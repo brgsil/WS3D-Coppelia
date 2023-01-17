@@ -64,16 +64,18 @@ public class AppleDetector extends Codelet {
                //known = new CopyOnWriteArrayList((List<Thing>) knownApplesMO.getI());    
                synchronized(vision) {
                  for (Thing t : vision) {
-                    boolean found = false;
-                    synchronized(known) {
-                       CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
-                       for (Thing e : myknown)
-                          if (Objects.equals(t, e)) {
-                            found = true;
-                            break;
-                          }
-                       if (found == false) known.add(t);
-                    }
+                     if(t.isFood()){
+                        boolean found = false;
+                        synchronized(known) {
+                           CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
+                           for (Thing e : myknown)
+                              if (Objects.equals(t, e)) {
+                                found = true;
+                                break;
+                              }
+                           if (found == false) known.add(t);
+                        }
+                     }
                
                  }
                }

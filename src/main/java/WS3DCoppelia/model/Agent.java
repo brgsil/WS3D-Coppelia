@@ -87,7 +87,7 @@ public class Agent {
         synchronized (inWorldThings) {
             try {
                 for(Thing thing : inWorldThings){
-                    if (!thing.removed && thing.isInitialized()){
+                    if (thing.isInitialized()){
                         List<Float> posThing = thing.getRelativePos(agentHandle);
                         float x = posThing.get(0);
                         float y = posThing.get(1);

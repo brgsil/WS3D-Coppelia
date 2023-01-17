@@ -29,6 +29,7 @@ public class WS3DCoppelia {
     private RemoteAPIObjects._sim sim;
     private List<Agent> inWorldAgents = Collections.synchronizedList(new ArrayList());
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
+    private float width = 5, heigth = 5;
     
     
     public WS3DCoppelia(){
@@ -40,6 +41,14 @@ public class WS3DCoppelia {
 //        } catch (CborException ex) {
 //            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
 //        }
+    }
+    
+    public WS3DCoppelia(float width_, float heigth_){
+        client = new RemoteAPIClient();
+        sim = client.getObject().sim();
+        
+        width = width_;
+        heigth = heigth_;  
     }
         
     
@@ -85,6 +94,12 @@ public class WS3DCoppelia {
         float startTime = sim.getSimulationTime();
         while(sim.getSimulationTime() - startTime < 1){}
         
+        Long floorHandle =  sim.getObject("/Floor");
+        List<Float> floorSize = sim.getShapeBB(floorHandle);
+        floorSize.set(0, width);
+        floorSize.set(1, heigth);
+        sim.setShapeBB(floorHandle, floorSize);
+        
         Timer t = new Timer();
         WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 100, 100);
@@ -123,6 +138,14 @@ public class WS3DCoppelia {
         }
         
         return false;
+    }
+    
+    public float getWorldWidth(){
+        return width;
+    }
+    
+    public float getWorldHeigth(){
+        return heigth;
     }
     
 }
