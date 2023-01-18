@@ -91,6 +91,10 @@ public class Constants {
     public static final double pFoodLAMBDA = 1;
     public static final double npFoodLAMBDA = 0.7;
     public static double SECURITY = 30; //empiric
+    
+    //Leaflet
+    public static int LEAFLET_NUMBER_OF_ITEMS = 3;
+    public static int MAX_NUMBER_ITEMS_PER_COLOR = 3;
 
     public enum ThingsType{
         PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300),
@@ -115,5 +119,26 @@ public class Constants {
         public int shape() { return shape; }
         public List<Float> color() { return color; }
         public float energy() { return energy; }
+    }
+    
+    public static final ThingsType[] JEWELS_TYPES = Arrays.copyOfRange(ThingsType.values(), 2, 8);
+    
+    public static int getPaymentColor(ThingsType type){
+        switch(type) {
+            case RED_JEWEL:
+                return 10;
+            case GREEN_JEWEL:
+                return 8;
+            case BLUE_JEWEL:
+                return 6;
+            case MAGENTA_JEWEL:
+                return 4;
+            case YELLOW_JEWEL:
+                return 2;
+            case WHITE_JEWEL:
+                return 1;
+            default:
+                return 0;
+        }
     }
 }
