@@ -95,35 +95,86 @@ public class Constants {
     //Leaflet
     public static int LEAFLET_NUMBER_OF_ITEMS = 3;
     public static int MAX_NUMBER_ITEMS_PER_COLOR = 3;
+    public static int NUM_LEAFLET_PER_AGENTS = 3;
 
-    public enum ThingsType{
-        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300),
-        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, ORANGE_COLOR, 150), 
-        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, RED_COLOR, 0),
-        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, GREEN_COLOR, 0),
-        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, BLUE_COLOR, 0),
-        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, YELLOW_COLOR, 0),
-        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, MAGENTA_COLOR, 0),
-        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, WHITE_COLOR, 0);
+    public interface ThingsType {
+        public int shape();
+        public List<Float> color();
+        public String typeName();
+    }
+    public enum FoodTypes implements ThingsType{
+        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300, "P_Food"),
+        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, ORANGE_COLOR, 150, "NP_Food");
         
         private final int shape;
         private final List<Float> color;
+        private final String type_name;
         private final float energy;
         
-        ThingsType(int shape, List<Float> color, float energy){
+        FoodTypes(int shape, List<Float> color, float energy, String name){
             this.shape = shape;
             this.color = color;
+            this.type_name = name;
             this.energy = energy;
         }
         
+        @Override
         public int shape() { return shape; }
+        @Override
         public List<Float> color() { return color; }
+        @Override
+        public String typeName() { return type_name; }
         public float energy() { return energy; }
     }
     
-    public static final ThingsType[] JEWELS_TYPES = Arrays.copyOfRange(ThingsType.values(), 2, 8);
+    public enum JewelTypes implements ThingsType{
+        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, RED_COLOR, "Red_Jewel"),
+        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, GREEN_COLOR, "Green_Jewel"),
+        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, BLUE_COLOR, "Blue_Jewel"),
+        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, YELLOW_COLOR, "Yellow_Jewel"),
+        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, MAGENTA_COLOR, "Magenta_Jewel"),
+        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, WHITE_COLOR, "White_Jewel");
+        
+        private final int shape;
+        private final List<Float> color;
+        private final String type_name;
+        
+        JewelTypes(int shape, List<Float> color, String name){
+            this.shape = shape;
+            this.color = color;
+            this.type_name = name;
+        }
+        
+        @Override
+        public int shape() { return shape; }
+        @Override
+        public List<Float> color() { return color; }
+        @Override
+        public String typeName() { return type_name; }
+    }
     
-    public static int getPaymentColor(ThingsType type){
+    public enum BrickTypes implements ThingsType{
+        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cone, RED_COLOR, "Red_Brick");
+        
+        private final int shape;
+        private final List<Float> color;
+        private final String type_name;
+        
+        BrickTypes(int shape, List<Float> color, String name){
+            this.shape = shape;
+            this.color = color;
+            this.type_name = name;
+        }
+        
+        @Override
+        public int shape() { return shape; }
+        @Override
+        public List<Float> color() { return color; }
+        @Override
+        public String typeName() { return type_name; }
+    }
+    
+    public static int getPaymentColor(JewelTypes type){
         switch(type) {
             case RED_JEWEL:
                 return 10;

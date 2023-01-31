@@ -110,7 +110,12 @@ public class WS3DCoppelia {
     }
     
     public Agent createAgent(float x, float y){
-        Agent newAgent = new Agent(sim, x, y);
+        if (Math.abs(x) > width / 2)
+            x = Math.copySign(width / 2, x);
+        if (Math.abs(y) > heigth / 2)
+            y = Math.copySign(heigth / 2, y);
+        
+        Agent newAgent = new Agent(sim, x, y, width, heigth);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
         }
@@ -118,6 +123,11 @@ public class WS3DCoppelia {
     }
     
     public Thing createThing(ThingsType category, float x, float y){
+        if (Math.abs(x) > width / 2)
+            x = Math.copySign(width / 2, x);
+        if (Math.abs(y) > heigth / 2)
+            y = Math.copySign(heigth / 2, y);
+        
         Thing newThing = new Thing(sim, category, x, y);
         synchronized (inWorldThings) {
             inWorldThings.add(newThing);

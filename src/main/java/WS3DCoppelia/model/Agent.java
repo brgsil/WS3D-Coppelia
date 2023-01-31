@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +21,7 @@ import java.util.logging.Logger;
  *
  * @author bruno
  */
-public class Agent {
+public class Agent extends Identifiable {
     private RemoteAPIObjects._sim sim;
     private String fuel_id;
     private Long agentHandle;
@@ -31,19 +32,27 @@ public class Agent {
     private float fuel;    
     private List<Thing> thingsInVision =  Collections.synchronizedList(new ArrayList());
     private Bag bag = new Bag();
+    private int score = 0;
+    private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
     
     private boolean initialized = false;
     private double fovAngle = 0.5;
     private int maxFov = 100;
     private boolean rotate = false;
+    private final float xLimit;
+    private final float yLimit;
     
     private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
     
-    public Agent(RemoteAPIObjects._sim sim_, float x, float y){
+    public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth){
         sim = sim_;  
         pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
         ori = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
-        
+        xLimit = width / 2;
+        yLimit = heigth / 2;
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+            leaflets[i] = new Leaflet();
+        }
     }
     
     public void init(){
@@ -130,6 +139,9 @@ public class Agent {
                     case "sackIt":
                         this.execSackIt((Thing) commandQueue.get(command));
                         break;
+                    case "deliver":
+                        this.execDeliver((Integer) commandQueue.get(command));
+                        break;
                     case "stop":
                         this.execStop();
                         break;
@@ -171,10 +183,18 @@ public class Agent {
         commandQueue.put("stop", thing);
     }
     
+    public void deliver(int leafletId){
+        commandQueue.put("deliver", leafletId);
+    }
+    
     private void execMove(List<Float> params){
         try {
             float goalX = params.get(0);
+            if (Math.abs(goalX) > xLimit)
+                goalX = Math.copySign(xLimit, goalX);
             float goalY = params.get(1);
+            if (Math.abs(goalY) > yLimit)
+                goalY = Math.copySign(yLimit, goalY);
             double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
             
             List<Float> targetOri = new ArrayList<>(ori);
@@ -237,8 +257,31 @@ public class Agent {
         try {
             thing.remove();
             bag.insertItem(thing.thingType(), 1);
+            for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+                leaflets[i].updateProgress(bag);
+            }
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void execDeliver(int leafletId){
+        boolean deliverable = false;
+
+        int pos = 0;
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+            if(leaflets[i].checkId(leafletId) && leaflets[i].isCompleted()){
+                pos = i;
+                deliverable = true;
+            }
+        }
+
+        if (deliverable){
+            score += leaflets[pos].getPayment();
+            leaflets[pos].setDelivered(true);
+            for(Entry<Constants.JewelTypes, Integer> requirement : leaflets[pos].getRequirements().entrySet()){
+                bag.removeItem(requirement.getKey(), requirement.getValue());
+            }
         }
     }
     
@@ -266,5 +309,16 @@ public class Agent {
     
     public Bag getBag(){
         return bag;
+    }
+    
+    public Leaflet[] getLeaflets(){
+        return leaflets;
+    }
+    
+    public void generateNewLeaflets(){
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+            leaflets[i] = new Leaflet();
+            leaflets[i].updateProgress(bag);
+        }
     }
 }

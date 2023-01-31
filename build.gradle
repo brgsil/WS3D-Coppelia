@@ -56,3 +56,13 @@ tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+artifacts
+{
+    //archives javadocJar, sourcesJar
+    archives sourcesJar
+}

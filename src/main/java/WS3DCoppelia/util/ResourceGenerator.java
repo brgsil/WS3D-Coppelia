@@ -21,6 +21,8 @@ package WS3DCoppelia.util;
 
 import WS3DCoppelia.WS3DCoppelia;
 import WS3DCoppelia.model.Thing;
+import WS3DCoppelia.util.Constants.FoodTypes;
+import WS3DCoppelia.util.Constants.JewelTypes;
 import WS3DCoppelia.util.Constants.ThingsType;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,18 +55,18 @@ public class ResourceGenerator extends Thread {
             try {
                 if(createFood){
                 //perishable
-                generateFood(ThingsType.PFOOD);
+                generateFood(FoodTypes.PFOOD);
                 //non-perishable
-                generateFood(ThingsType.NPFOOD);
+                generateFood(FoodTypes.NPFOOD);
                 }
                 ///generate jewels
                 if(createJewel){
-                generateJewel(ThingsType.RED_JEWEL);
-                generateJewel(ThingsType.GREEN_JEWEL);
-                generateJewel(ThingsType.BLUE_JEWEL);
-                generateJewel(ThingsType.YELLOW_JEWEL);
-                generateJewel(ThingsType.MAGENTA_JEWEL);
-                generateJewel(ThingsType.WHITE_JEWEL);
+                generateJewel(JewelTypes.RED_JEWEL);
+                generateJewel(JewelTypes.GREEN_JEWEL);
+                generateJewel(JewelTypes.BLUE_JEWEL);
+                generateJewel(JewelTypes.YELLOW_JEWEL);
+                generateJewel(JewelTypes.MAGENTA_JEWEL);
+                generateJewel(JewelTypes.WHITE_JEWEL);
                 }
                 
                 Thread.sleep(timeInMinutes * 60000);
@@ -95,7 +97,7 @@ public class ResourceGenerator extends Thread {
         return k - 1;
     }
 
-    private void generateFood(ThingsType type) {
+    private void generateFood(FoodTypes type) {
         int number = 1;
         Random rdX = new Random();
         Random rdY = new Random();
@@ -123,7 +125,7 @@ public class ResourceGenerator extends Thread {
 
     }
 
-    private void generateJewel(ThingsType type) {
+    private void generateJewel(JewelTypes type) {
         int number = 1;
         Random rdX = new Random();
         Random rdY = new Random();

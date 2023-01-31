@@ -5,6 +5,7 @@
 package WS3DCoppelia.model;
 
 import WS3DCoppelia.util.Constants;
+import WS3DCoppelia.util.Constants.JewelTypes;
 import WS3DCoppelia.util.Constants.ThingsType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,12 +18,12 @@ import java.util.Random;
  *
  * @author bruno
  */
-public class Leaflet {
+public class Leaflet extends Identifiable {
     private int payment;
     private boolean completed;
     private boolean delivered = false;
     
-    private Map<ThingsType, Integer> requirements = new HashMap();
+    private Map<JewelTypes, Integer> requirements = new HashMap();
     
     public Leaflet(){
         Random rng = new Random();
@@ -36,9 +37,9 @@ public class Leaflet {
             //Select a random amount of jewels
             int num = rng.nextInt(Constants.MAX_NUMBER_ITEMS_PER_COLOR);
             
-            requirements.put(Constants.JEWELS_TYPES[list.get(i)], num);
+            requirements.put(JewelTypes.values()[list.get(i)], num);
             
-            payment += Constants.getPaymentColor(Constants.JEWELS_TYPES[list.get(i)]);
+            payment += Constants.getPaymentColor(JewelTypes.values()[list.get(i)]);
         }
     }
 
@@ -50,7 +51,7 @@ public class Leaflet {
         return completed;
     }
 
-    public Map<ThingsType, Integer> getRequirements() {
+    public Map<JewelTypes, Integer> getRequirements() {
         return requirements;
     }
 
@@ -62,7 +63,7 @@ public class Leaflet {
         this.delivered = delivered;
     }
     
-    public int getRequiredAmountOf(ThingsType type){
+    public int getRequiredAmountOf(JewelTypes type){
         return requirements.getOrDefault(type, 0);
     }
     

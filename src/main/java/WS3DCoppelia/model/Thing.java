@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author bruno
  */
-public class Thing {
+public class Thing extends Identifiable {
     private RemoteAPIObjects._sim sim;
     private Long thingHandle;
     private List<Float> pos;
@@ -69,9 +69,17 @@ public class Thing {
         return category;
     }
     
-    public boolean isFood() { return category == ThingsType.PFOOD || category == ThingsType.NPFOOD; }
+    public boolean isFood() { return category instanceof Constants.FoodTypes; }
     
-    public float energy() { return category.energy(); }
+    public boolean isJewel() { return category instanceof Constants.JewelTypes; }
+    
+    public boolean isBrick() { return category instanceof Constants.BrickTypes; }
+    
+    public float energy() { 
+        if (category instanceof Constants.FoodTypes)
+            return ((Constants.FoodTypes) category).energy();
+        return 0;
+    }
     
     public void remove() throws CborException{
         sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
@@ -92,5 +100,10 @@ public class Thing {
     public boolean isInitialized(){
         return initialized;
     }
+    
+    public String getTypeName(){
+        return category.typeName();
+    }
+
     
 }

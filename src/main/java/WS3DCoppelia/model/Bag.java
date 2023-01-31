@@ -16,20 +16,14 @@ public class Bag {
     
     private Map<ThingsType, Integer> content = new HashMap();
     
-    public Bag(){
-        for(ThingsType type : ThingsType.values()){
-            content.put(type, 0);
-        }
-    }
-    
     public void insertItem(ThingsType type, int num){
-        int current = content.get(type);
+        int current = content.getOrDefault(type, 0);
         content.put(type, current + num);
     }
     
     public boolean removeItem(ThingsType type, int num){
-        int current = content.get(type);
-        if(current >= num){
+        int current = content.getOrDefault(type, 0);
+        if(current >= num && num >= 0){
             content.put(type, current - num);
             return true;
         }
@@ -37,6 +31,6 @@ public class Bag {
     }
     
     public int getTotalCountOf(ThingsType type){
-        return content.get(type);
+        return content.getOrDefault(type, 0);
     }
 }

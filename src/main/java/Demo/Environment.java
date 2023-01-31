@@ -26,11 +26,8 @@ public class Environment {
     private ResourceGenerator rg;
     
     public Environment(){
-        world = new WS3DCoppelia(5,8);
+        world = new WS3DCoppelia(4,4);
         creature = world.createAgent(1,1);
-        world.createThing(Constants.ThingsType.PFOOD, 1,-1);
-        world.createThing(Constants.ThingsType.PFOOD, (float) 1.4,-1);
-        world.createThing(Constants.ThingsType.PFOOD, (float) 0.6,-1);
         
         rg = new ResourceGenerator(world, 1, world.getWorldWidth(), world.getWorldHeigth());
         //rg.disableJewel();
