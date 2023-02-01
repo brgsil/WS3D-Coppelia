@@ -6,6 +6,7 @@ package WS3DCoppelia;
 
 import Demo.Environment;
 import WS3DCoppelia.model.*;
+import WS3DCoppelia.util.Constants.BrickTypes;
 import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.*;
@@ -35,12 +36,6 @@ public class WS3DCoppelia {
     public WS3DCoppelia(){
         client = new RemoteAPIClient();
         sim = client.getObject().sim();
-        
-//        try {
-//            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
-//        } catch (CborException ex) {
-//            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
-//        }
     }
     
     public WS3DCoppelia(float width_, float heigth_){
@@ -49,6 +44,13 @@ public class WS3DCoppelia {
         
         width = width_;
         heigth = heigth_;  
+        try {
+            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
+            System.out.println("Saved");
+        } catch (CborException ex) {
+            System.out.println("Error");
+            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
         
     
@@ -133,6 +135,14 @@ public class WS3DCoppelia {
             inWorldThings.add(newThing);
         }
         return newThing;
+    }
+    
+    public Thing createBrick(BrickTypes type, float x1, float y1, float x2, float y2){
+        Thing newBrick = new Thing(sim, type, x1, y1, x2, y2);
+        synchronized (inWorldThings) {
+            inWorldThings.add(newBrick);
+        }
+        return newBrick;
     }
     
     public boolean isOccupied(float x, float y){

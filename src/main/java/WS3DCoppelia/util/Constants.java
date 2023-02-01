@@ -15,6 +15,7 @@ import java.util.List;
 public class Constants {
 
     public static final List<Float> THING_SIZE = Arrays.asList(new Float[]{(float) 0.1, (float) 0.1, (float) 0.1});
+    public static final float BRICK_HEIGTH = (float) 0.2;
     
     public static final List<Float> RED_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.25, (float) 0.25});
     public static final List<Float> GREEN_COLOR = Arrays.asList(new Float[]{(float) 0.25, (float) 0.95, (float) 0.25});
@@ -154,7 +155,7 @@ public class Constants {
     }
     
     public enum BrickTypes implements ThingsType{
-        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cone, RED_COLOR, "Red_Brick");
+        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, RED_COLOR, "Red_Brick");
         
         private final int shape;
         private final List<Float> color;

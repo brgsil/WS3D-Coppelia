@@ -62,6 +62,7 @@ public class Agent extends Identifiable {
             sim.setObjectPosition(agentHandle, sim.handle_world, pos);
             sim.setObjectOrientation(agentHandle, sim.handle_world, ori);
             
+            
             targetHandle = sim.createDummy(0.01);
             sim.setObjectPosition(targetHandle, sim.handle_world, pos);
             
@@ -76,6 +77,7 @@ public class Agent extends Identifiable {
             
             fuel_id = "fuel_" + sim.getObjectUid(agentHandle).toString();
             
+            sim.setObjectSpecialProperty(agentHandle, sim.objectspecialproperty_collidable);
         } catch (CborException ex) {
             System.out.println("Err");
         }

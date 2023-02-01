@@ -25,6 +25,8 @@ public class Thing extends Identifiable {
     private List<Float> pos;
     public boolean removed = false;
     
+    public float width = (float) 0.1, depth = (float) 0.1;
+    
     private ThingsType category;
     
     private boolean initialized = false;
@@ -36,11 +38,24 @@ public class Thing extends Identifiable {
         
     }
     
+    public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, float x1, float y1, float x2, float y2){
+        sim = sim_;
+        width = Math.abs(x1 - x2);
+        depth = Math.abs(y1 - y2);
+        pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, (float) 0.05});
+        category = category_;
+        
+    }
+     
     public void init(){
         
         try {
-            thingHandle = sim.createPrimitiveShape(category.shape(), THING_SIZE, 0);
-            
+            if (category instanceof Constants.BrickTypes){
+                List<Float> brickSize = Arrays.asList(new Float[]{width, depth, Constants.BRICK_HEIGTH});
+                thingHandle = sim.createPrimitiveShape(category.shape(), brickSize, 0);
+            } else {
+                thingHandle = sim.createPrimitiveShape(category.shape(), THING_SIZE, 0);
+            }
             sim.setObjectPosition(thingHandle, RemoteAPIObjects._sim.handle_world, pos);
             sim.setObjectColor(thingHandle,
                     0,
@@ -48,7 +63,9 @@ public class Thing extends Identifiable {
                     category.color());
             //Long applesParentHandle = sim.getObject("/apples");
             //sim.setObjectParent(thingHandle, applesParentHandle, true);
-            
+     
+            sim.setObjectSpecialProperty(thingHandle, sim.objectspecialproperty_collidable);  
+            sim.setObjectInt32Param(thingHandle, sim.shapeintparam_respondable, 1);
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
