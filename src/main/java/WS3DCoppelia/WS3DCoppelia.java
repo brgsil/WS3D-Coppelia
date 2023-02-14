@@ -109,6 +109,8 @@ public class WS3DCoppelia {
         floorSize.set(0, width);
         floorSize.set(1, heigth);
         sim.setShapeBB(floorHandle, floorSize);
+        List<Float> floorPos = Arrays.asList(new Float[]{width/2, heigth/2, (float) -0.02});
+        sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
         
         worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
         
@@ -123,10 +125,9 @@ public class WS3DCoppelia {
     }
     
     public Agent createAgent(float x, float y){
-        if (Math.abs(x) > width / 2)
-            x = Math.copySign(width / 2, x);
-        if (Math.abs(y) > heigth / 2)
-            y = Math.copySign(heigth / 2, y);
+        //Ensures limit
+        x = (x > width) ? width : (x < 0 ? 0: x );
+        y = (y > heigth) ? heigth : (y < 0 ? 0: y );
         
         Agent newAgent = new Agent(sim, x, y, width, heigth);
         synchronized(inWorldAgents){
@@ -136,10 +137,9 @@ public class WS3DCoppelia {
     }
     
     public Thing createThing(ThingsType category, float x, float y){
-        if (Math.abs(x) > width / 2)
-            x = Math.copySign(width / 2, x);
-        if (Math.abs(y) > heigth / 2)
-            y = Math.copySign(heigth / 2, y);
+        //Ensures limit
+        x = (x > width) ? width : (x < 0 ? 0: x );
+        y = (y > heigth) ? heigth : (y < 0 ? 0: y );
         
         Thing newThing = new Thing(sim, category, x, y);
         synchronized (inWorldThings) {
