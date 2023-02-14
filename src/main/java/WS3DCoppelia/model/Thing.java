@@ -10,6 +10,7 @@ import static WS3DCoppelia.util.Constants.THING_SIZE;
 import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -42,7 +43,10 @@ public class Thing extends Identifiable {
         sim = sim_;
         width = Math.abs(x1 - x2);
         depth = Math.abs(y1 - y2);
-        pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, (float) 0.05});
+        if( category_ instanceof Constants.BrickTypes)
+            pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, Constants.BRICK_HEIGTH / 2});
+        else
+            pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, (float) 0.05});
         category = category_;
         
     }
@@ -50,22 +54,16 @@ public class Thing extends Identifiable {
     public void init(){
         
         try {
+            List<Float> size;
             if (category instanceof Constants.BrickTypes){
-                List<Float> brickSize = Arrays.asList(new Float[]{width, depth, Constants.BRICK_HEIGTH});
-                thingHandle = sim.createPrimitiveShape(category.shape(), brickSize, 0);
+                size = Arrays.asList(new Float[]{width, depth, Constants.BRICK_HEIGTH});
             } else {
-                thingHandle = sim.createPrimitiveShape(category.shape(), THING_SIZE, 0);
+                size = THING_SIZE;
             }
-            sim.setObjectPosition(thingHandle, RemoteAPIObjects._sim.handle_world, pos);
-            sim.setObjectColor(thingHandle,
-                    0,
-                    RemoteAPIObjects._sim.colorcomponent_ambient_diffuse,
-                    category.color());
-            //Long applesParentHandle = sim.getObject("/apples");
-            //sim.setObjectParent(thingHandle, applesParentHandle, true);
-     
-            sim.setObjectSpecialProperty(thingHandle, sim.objectspecialproperty_collidable);  
-            sim.setObjectInt32Param(thingHandle, sim.shapeintparam_respondable, 1);
+            
+            Long floorHandle =  sim.getObject("/Floor");
+            Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+            thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, category.color());
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -103,8 +101,11 @@ public class Thing extends Identifiable {
         removed = true;
     }
 
-    public List<Float> getRelativePos(Long sourceHandle) throws CborException {
-        List<Float> relPos = sim.getObjectPose(thingHandle, sourceHandle);
+    public List<Float> getRelativePos(List<Float> source_pos) {
+        List<Float> relPos = new ArrayList<>();
+        for (int i = 0; i < 3; i++){
+            relPos.add(pos.get(i) - source_pos.get(i));
+        }
         return relPos;
     }
     

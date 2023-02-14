@@ -31,6 +31,8 @@ public class WS3DCoppelia {
     private List<Agent> inWorldAgents = Collections.synchronizedList(new ArrayList());
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
     private float width = 5, heigth = 5;
+    private boolean updated = true;
+    private Long worldScript;
     
     
     public WS3DCoppelia(){
@@ -44,13 +46,13 @@ public class WS3DCoppelia {
         
         width = width_;
         heigth = heigth_;  
-        try {
-            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
-            System.out.println("Saved");
-        } catch (CborException ex) {
-            System.out.println("Error");
-            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            sim.saveModel(sim.getObject("/agent[0]"), System.getProperty("user.dir") + "/workspace/agent_model.ttm");
+//            System.out.println("Saved");
+//        } catch (CborException ex) {
+//            System.out.println("Error");
+//            Logger.getLogger(WS3DCoppelia.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
         
     
@@ -84,9 +86,15 @@ public class WS3DCoppelia {
         }
         synchronized(inWorldAgents){
             for(Agent agt : inWorldAgents){
-                agt.run(inWorldThings);
+                agt.run(inWorldThings, worldScript);
             }
         }
+        
+        updated = true;
+    }
+    
+    public boolean hadFirstUpdate(){
+        return updated;
     }
     
     public void startSimulation() throws java.io.IOException, CborException{
@@ -94,7 +102,7 @@ public class WS3DCoppelia {
         sim.startSimulation();
         
         float startTime = sim.getSimulationTime();
-        while(sim.getSimulationTime() - startTime < 1){}
+        while(sim.getSimulationTime() - startTime < 3){}
         
         Long floorHandle =  sim.getObject("/Floor");
         List<Float> floorSize = sim.getShapeBB(floorHandle);
@@ -102,9 +110,12 @@ public class WS3DCoppelia {
         floorSize.set(1, heigth);
         sim.setShapeBB(floorHandle, floorSize);
         
+        worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+        
         Timer t = new Timer();
         WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 100, 100);
+        updated = false;
     }
     
     public void stopSimulation() throws CborException{

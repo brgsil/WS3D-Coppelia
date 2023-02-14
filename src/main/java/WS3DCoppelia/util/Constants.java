@@ -15,7 +15,7 @@ import java.util.List;
 public class Constants {
 
     public static final List<Float> THING_SIZE = Arrays.asList(new Float[]{(float) 0.1, (float) 0.1, (float) 0.1});
-    public static final float BRICK_HEIGTH = (float) 0.2;
+    public static final float BRICK_HEIGTH = (float) 0.5;
     
     public static final List<Float> RED_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.25, (float) 0.25});
     public static final List<Float> GREEN_COLOR = Arrays.asList(new Float[]{(float) 0.25, (float) 0.95, (float) 0.25});

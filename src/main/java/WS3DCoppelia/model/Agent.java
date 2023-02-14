@@ -26,6 +26,7 @@ public class Agent extends Identifiable {
     private String fuel_id;
     private Long agentHandle;
     private Long targetHandle;
+    private Long worldScript;
     
     private List<Float> pos;
     private List<Float> ori;
@@ -59,25 +60,8 @@ public class Agent extends Identifiable {
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/workspace/agent_model.ttm");
             
-            sim.setObjectPosition(agentHandle, sim.handle_world, pos);
-            sim.setObjectOrientation(agentHandle, sim.handle_world, ori);
-            
-            
-            targetHandle = sim.createDummy(0.01);
-            sim.setObjectPosition(targetHandle, sim.handle_world, pos);
-            
-            Long agentScriptHandle = sim.getScript(sim.scripttype_childscript, agentHandle);
-            
-            String agentScriptCode = String.format(Constants.BASE_SCRIPT, 
-                                                    sim.getObjectUid(agentHandle), 
-                                                    sim.getObjectUid(targetHandle), 
-                                                    sim.getObjectUid(agentHandle));
-            sim.setScriptStringParam(agentScriptHandle, sim.scriptstringparam_text, agentScriptCode);
-            sim.initScript(agentScriptHandle);
-            
+            targetHandle = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT);
             fuel_id = "fuel_" + sim.getObjectUid(agentHandle).toString();
-            
-            sim.setObjectSpecialProperty(agentHandle, sim.objectspecialproperty_collidable);
         } catch (CborException ex) {
             System.out.println("Err");
         }
@@ -86,7 +70,6 @@ public class Agent extends Identifiable {
     public void updateState(List<Thing> inWorldThings){
         try {
             fuel = sim.getFloatSignal(fuel_id);
-            System.out.println(fuel);
             
             pos = sim.getObjectPosition(agentHandle, sim.handle_world);
             ori = sim.getObjectOrientation(agentHandle, sim.handle_world);
@@ -97,20 +80,17 @@ public class Agent extends Identifiable {
         
         List<Thing> thingsSeen = new ArrayList();
         synchronized (inWorldThings) {
-            try {
-                for(Thing thing : inWorldThings){
-                    if (thing.isInitialized()){
-                        List<Float> posThing = thing.getRelativePos(agentHandle);
-                        float x = posThing.get(0);
-                        float y = posThing.get(1);
+            for(Thing thing : inWorldThings){
+                if (thing.isInitialized()){
+                    List<Float> posThing = thing.getRelativePos(pos);
+                    float x = posThing.get(0);
+                    float y = posThing.get(1);
 
-                        if (x < maxFov && (-fovAngle*x < y && y < fovAngle*x)){
-                            thingsSeen.add(thing);
-                        }
+                    float thingPitch = ((float) Math.atan2(x, y)) - this.getPitch();
+                    if (x < maxFov && (-fovAngle < thingPitch && thingPitch < fovAngle)){
+                        thingsSeen.add(thing);
                     }
                 }
-             } catch (CborException ex) {
-                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -154,8 +134,9 @@ public class Agent extends Identifiable {
         }
     }
     
-    public void run(List<Thing> inWorldThings){
+    public void run(List<Thing> inWorldThings, Long worldScript_){
         if (!initialized){
+            worldScript = worldScript_;
             this.init();
             initialized = true;
         }
@@ -199,13 +180,12 @@ public class Agent extends Identifiable {
                 goalY = Math.copySign(yLimit, goalY);
             double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
             
+            List<Float> targetPos = Arrays.asList(new Float[]{goalX, goalY, (float) 0});
             List<Float> targetOri = new ArrayList<>(ori);
             targetOri.set(2, (float) goalPitch);
             
-            sim.setObjectOrientation(targetHandle, sim.handle_world, targetOri);
-            sim.setObjectOrientation(agentHandle, sim.handle_world, targetOri);
-            List<Float> targetPos = Arrays.asList(new Float[]{goalX, goalY, (float) 0});
-            sim.setObjectPosition(targetHandle, sim.handle_world, targetPos);
+            sim.callScriptFunction("move_agent", worldScript, agentHandle, targetHandle, targetPos, targetOri);
+            
             rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
@@ -226,14 +206,8 @@ public class Agent extends Identifiable {
     }
     
     private void execRotate(){
-        try {
-            List<Float> targetPos = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
-        
-            sim.setObjectPosition(targetHandle, agentHandle, targetPos);
-        
-            List<Float> euler = sim.getObjectOrientation(targetHandle, agentHandle);
-            euler.set(2, (float) 3);
-            sim.setObjectOrientation(targetHandle, agentHandle, euler);
+        try {            
+            sim.callScriptFunction("rotate_agent", worldScript, agentHandle, targetHandle);
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -242,13 +216,7 @@ public class Agent extends Identifiable {
     
     private void execStop(){
         try {
-            List<Float> targetPos = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
-        
-            sim.setObjectPosition(targetHandle, agentHandle, targetPos);
-        
-            List<Float> euler = sim.getObjectOrientation(targetHandle, agentHandle);
-            euler.set(2, (float) 0);
-            sim.setObjectOrientation(targetHandle, agentHandle, euler);
+            sim.callScriptFunction("stop_agent", worldScript, agentHandle, targetHandle);
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
