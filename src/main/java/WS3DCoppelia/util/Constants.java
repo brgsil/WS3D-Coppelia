@@ -75,7 +75,7 @@ public class Constants {
             + "\n";
    
     public static double THING_OCCUPANCY_RADIUS = 0.15;
-    public static double AGENT_OCCUPANCY_RADIUS = 0.2;
+    public static double AGENT_OCCUPANCY_RADIUS = 0.25;
     
     /**
      * Resources Generator package constants

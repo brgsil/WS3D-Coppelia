@@ -49,8 +49,8 @@ public class Agent extends Identifiable {
         sim = sim_;  
         pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
         ori = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
-        xLimit = width / 2;
-        yLimit = heigth / 2;
+        xLimit = width;
+        yLimit = heigth;
         for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
             leaflets[i] = new Leaflet();
         }
@@ -163,7 +163,7 @@ public class Agent extends Identifiable {
     }
     
     public void sackIt(Thing thing){
-        commandQueue.put("stop", thing);
+        commandQueue.put("sackIt", thing);
     }
     
     public void deliver(int leafletId){
@@ -173,11 +173,9 @@ public class Agent extends Identifiable {
     private void execMove(List<Float> params){
         try {
             float goalX = params.get(0);
-            if (Math.abs(goalX) > xLimit)
-                goalX = Math.copySign(xLimit, goalX);
             float goalY = params.get(1);
-            if (Math.abs(goalY) > yLimit)
-                goalY = Math.copySign(yLimit, goalY);
+            goalX = (goalX > xLimit) ? xLimit : (goalX < 0.1f ? 0.1f: goalX );
+            goalY = (goalY > yLimit) ? yLimit : (goalY < 0.1f ? 0.1f: goalY );
             double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
             
             List<Float> targetPos = Arrays.asList(new Float[]{goalX, goalY, (float) 0});

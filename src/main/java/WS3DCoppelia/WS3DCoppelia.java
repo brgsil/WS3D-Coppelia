@@ -31,7 +31,6 @@ public class WS3DCoppelia {
     private List<Agent> inWorldAgents = Collections.synchronizedList(new ArrayList());
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
     private float width = 5, heigth = 5;
-    private boolean updated = true;
     private Long worldScript;
     
     
@@ -89,12 +88,6 @@ public class WS3DCoppelia {
                 agt.run(inWorldThings, worldScript);
             }
         }
-        
-        updated = true;
-    }
-    
-    public boolean hadFirstUpdate(){
-        return updated;
     }
     
     public void startSimulation() throws java.io.IOException, CborException{
@@ -114,10 +107,11 @@ public class WS3DCoppelia {
         
         worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
         
+        updateState();
+        
         Timer t = new Timer();
         WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 100, 100);
-        updated = false;
     }
     
     public void stopSimulation() throws CborException{
@@ -126,8 +120,8 @@ public class WS3DCoppelia {
     
     public Agent createAgent(float x, float y){
         //Ensures limit
-        x = (x > width) ? width : (x < 0 ? 0: x );
-        y = (y > heigth) ? heigth : (y < 0 ? 0: y );
+        x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
+        y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
         
         Agent newAgent = new Agent(sim, x, y, width, heigth);
         synchronized(inWorldAgents){
