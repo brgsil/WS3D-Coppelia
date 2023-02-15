@@ -115,8 +115,8 @@ public class ResourceGenerator extends Thread {
         }
         for (int i = 0; i < number; i++) {
             do {
-                cX = rdX.nextFloat()* width;
-                cY = rdY.nextFloat() * height;
+                cX = rdX.nextFloat()* (width-0.05f) + 0.05f;
+                cY = rdY.nextFloat() * (height-0.05f) + 0.05f;
 
             } while (world.isOccupied(cX, cY));
 

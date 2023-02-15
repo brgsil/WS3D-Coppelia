@@ -27,7 +27,7 @@ public class Constants {
     
     public static String BASE_SCRIPT = "#python\n"
             + "\n"
-            + "from math import sqrt\n"
+            + "from math import sqrt, floor\n"
             + "\n"
             + "lin_vel = 0.02 # m/s\n"
             + "ang_vel = 0.02  # rad/s\n"
@@ -72,7 +72,16 @@ public class Constants {
             + "def sysCall_cleanup():\n"
             + "    # do some clean-up here\n"
             + "    pass\n"
-            + "\n";
+            + "\n"
+            + "def status():\n"
+            + "    agent_handle = sim.getObjectFromUid(agent_uid)\n"
+            + "    pos = sim.getObjectPosition(agent_handle, sim.handle_world)\n"
+            + "    ori = sim.getObjectOrientation(agent_handle, sim.handle_world)\n"
+            + "    fuel = sim.getFloatSignal(fuel_id)\n"
+            + "    visionHandle = sim.getObjectChild(agent_handle, 1);\n"
+            + "    list = sim.readVisionSensor(visionHandle)[1];\n"
+            + "    list = [floor(k) for k in list]\n"
+            + "    return pos, ori, fuel, list\n";
    
     public static double THING_OCCUPANCY_RADIUS = 0.15;
     public static double AGENT_OCCUPANCY_RADIUS = 0.25;

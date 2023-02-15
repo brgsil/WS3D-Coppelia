@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -68,35 +69,33 @@ public class Agent extends Identifiable {
     }
     
     public void updateState(List<Thing> inWorldThings){
-        try {
-            fuel = sim.getFloatSignal(fuel_id);
+        List<Long> objectsInVision = new ArrayList<Long>();
+        try {             
+            long agentScript = sim.getScript(sim.scripttype_childscript, agentHandle, "");
+            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript);
+            pos = (List<Float>) response.get(0);
+            ori = (List<Float>) response.get(1);
+            fuel = (float) response.get(2);
+            objectsInVision = (List<Long>) response.get(3);
             
-            pos = sim.getObjectPosition(agentHandle, sim.handle_world);
-            ori = sim.getObjectOrientation(agentHandle, sim.handle_world);
-            
-        } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        List<Thing> thingsSeen = new ArrayList();
-        synchronized (inWorldThings) {
-            for(Thing thing : inWorldThings){
-                if (thing.isInitialized()){
-                    List<Float> posThing = thing.getRelativePos(pos);
-                    float x = posThing.get(0);
-                    float y = posThing.get(1);
-
-                    float thingPitch = ((float) Math.atan2(x, y)) - this.getPitch();
-                    if (x < maxFov && (-fovAngle < thingPitch && thingPitch < fovAngle)){
+            List<Thing> thingsSeen = new ArrayList<>();
+            synchronized (inWorldThings) {
+                for (Thing thing : inWorldThings){
+                    if(thing.isIncluded(objectsInVision)){
                         thingsSeen.add(thing);
                     }
                 }
+            }        
+
+            synchronized (thingsInVision){
+                thingsInVision.clear();
+                thingsInVision.addAll(thingsSeen);
             }
-        }
-        
-        synchronized (thingsInVision){
-            thingsInVision.clear();
-            thingsInVision.addAll(thingsSeen);
+            
+        } catch (CborException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
         }
         
         if (rotate)
@@ -109,19 +108,24 @@ public class Agent extends Identifiable {
             for(String command : commandQueue.keySet()){
                 switch (command){
                     case "move":
+                        System.out.println("Exec Move");
                         this.execMove((List<Float>) commandQueue.get(command));
                         break;
                     case "eat":
+                        System.out.println("Exec Eat");
                         this.execEatIt((Thing) commandQueue.get(command));
                         break;
                     case "rotate":
+                        System.out.println("Exec Rotate");
                         this.execRotate();
                         rotate = true;
                         break;
                     case "sackIt":
+                        System.out.println("Exec Sack");
                         this.execSackIt((Thing) commandQueue.get(command));
                         break;
                     case "deliver":
+                        System.out.println("Exec Deliver");
                         this.execDeliver((Integer) commandQueue.get(command));
                         break;
                     case "stop":
@@ -146,28 +150,41 @@ public class Agent extends Identifiable {
     }
     
     public void moveTo(float x, float y){
-        commandQueue.put("move", Arrays.asList(new Float[]{x, y}));
+        synchronized (commandQueue) {
+            commandQueue.put("move", Arrays.asList(new Float[]{x, y}));
+        }
     }
     
     public void eatIt(Thing thing){
+        synchronized (commandQueue) {
+        System.out.println(thing.isFood());
         if (thing.isFood())
             commandQueue.put("eat", thing);
+        }
     }
     
     public void rotate(){
+        synchronized (commandQueue) {
         commandQueue.put("rotate", "");
+        }
     }
     
     public void stop(){
+        synchronized (commandQueue) {
         commandQueue.put("stop", "");
+        }
     }
     
     public void sackIt(Thing thing){
+        synchronized (commandQueue) {
         commandQueue.put("sackIt", thing);
+        }
     }
     
     public void deliver(int leafletId){
+        synchronized (commandQueue) {
         commandQueue.put("deliver", leafletId);
+        }
     }
     
     private void execMove(List<Float> params){

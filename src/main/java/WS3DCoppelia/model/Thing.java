@@ -122,6 +122,10 @@ public class Thing extends Identifiable {
     public String getTypeName(){
         return category.typeName();
     }
+    
+    public boolean isIncluded(List<Long> handleList){
+        return handleList.contains(thingHandle);
+    }
 
     
 }
