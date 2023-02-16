@@ -7,6 +7,7 @@ package WS3DCoppelia.model;
 import WS3DCoppelia.util.Constants;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import support.NativeUtils;
 
 /**
  *
@@ -24,10 +26,9 @@ import java.util.stream.Collectors;
  */
 public class Agent extends Identifiable {
     private RemoteAPIObjects._sim sim;
-    private String fuel_id;
     private Long agentHandle;
-    private Long targetHandle;
     private Long worldScript;
+    private Long agentScript;
     
     private List<Float> pos;
     private List<Float> ori;
@@ -59,19 +60,18 @@ public class Agent extends Identifiable {
     
     public void init(){
         try {
-            agentHandle = sim.loadModel(System.getProperty("user.dir") + "/workspace/agent_model.ttm");
+            agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
             
-            targetHandle = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT);
-            fuel_id = "fuel_" + sim.getObjectUid(agentHandle).toString();
+            agentScript = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT);
         } catch (CborException ex) {
-            System.out.println("Err");
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     public void updateState(List<Thing> inWorldThings){
         List<Long> objectsInVision = new ArrayList<Long>();
         try {             
-            long agentScript = sim.getScript(sim.scripttype_childscript, agentHandle, "");
+            //long agentScript = sim.getScript(sim.scripttype_childscript, agentHandle, "");
             List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript);
             pos = (List<Float>) response.get(0);
             ori = (List<Float>) response.get(1);
@@ -91,6 +91,7 @@ public class Agent extends Identifiable {
                 thingsInVision.clear();
                 thingsInVision.addAll(thingsSeen);
             }
+            System.out.println(commandQueue.size());
             
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
@@ -105,7 +106,9 @@ public class Agent extends Identifiable {
     
     public void execCommands(){
         synchronized (commandQueue){
+            List<String> executed = new ArrayList<>();
             for(String command : commandQueue.keySet()){
+                executed.add(command);
                 switch (command){
                     case "move":
                         System.out.println("Exec Move");
@@ -134,7 +137,8 @@ public class Agent extends Identifiable {
                     default:
                 }
             }
-            commandQueue.clear();
+            for (String c : executed)
+                commandQueue.remove(c);
         }
     }
     
@@ -143,10 +147,10 @@ public class Agent extends Identifiable {
             worldScript = worldScript_;
             this.init();
             initialized = true;
+        } else {
+            this.updateState(inWorldThings);
+            this.execCommands();
         }
-        
-        this.updateState(inWorldThings);
-        this.execCommands();
     }
     
     public void moveTo(float x, float y){
@@ -199,41 +203,47 @@ public class Agent extends Identifiable {
             List<Float> targetOri = new ArrayList<>(ori);
             targetOri.set(2, (float) goalPitch);
             
-            sim.callScriptFunction("move_agent", worldScript, agentHandle, targetHandle, targetPos, targetOri);
+            sim.callScriptFunction("move_agent", agentScript, targetPos, targetOri);
             
             rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex){
+            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Move command return");
         }
     }
     
     private void execEatIt(Thing food){
         try {
             food.remove();
-            float fuel_ = sim.getFloatSignal(fuel_id);
-            float new_fuel = fuel_ + food.energy() > 1000 ? 1000 : fuel_ + food.energy();
-            sim.setFloatSignal(fuel_id, new_fuel);
+            sim.callScriptFunction("increase_fuel", agentScript, food.energy());
             
             rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex){
+            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Eat command return");
         }
     }
     
     private void execRotate(){
         try {            
-            sim.callScriptFunction("rotate_agent", worldScript, agentHandle, targetHandle);
+            sim.callScriptFunction("rotate_agent", agentScript);
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex){
+            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Rotate command return");
         }
 
     }
     
     private void execStop(){
         try {
-            sim.callScriptFunction("stop_agent", worldScript, agentHandle, targetHandle);
+            sim.callScriptFunction("stop_agent", agentScript);
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex){
+            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Stop command return");
         }
 
     }

@@ -10,6 +10,7 @@ import WS3DCoppelia.util.Constants.BrickTypes;
 import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import support.NativeUtils;
 
 /**
  *
@@ -37,11 +39,23 @@ public class WS3DCoppelia {
     public WS3DCoppelia(){
         client = new RemoteAPIClient();
         sim = client.getObject().sim();
+        try{
+            NativeUtils.loadFileFromJar("/workspace/agent_model.ttm");
+            NativeUtils.loadFileFromJar("/workspace/floor.ttm");
+        } catch(IOException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public WS3DCoppelia(float width_, float heigth_){
         client = new RemoteAPIClient();
         sim = client.getObject().sim();
+        try{
+            NativeUtils.loadFileFromJar("/workspace/agent_model.ttm");
+            NativeUtils.loadFileFromJar("/workspace/floor.ttm");
+        } catch(IOException ex) {
+            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         width = width_;
         heigth = heigth_;  
@@ -95,9 +109,16 @@ public class WS3DCoppelia {
         sim.startSimulation();
         
         float startTime = sim.getSimulationTime();
-        while(sim.getSimulationTime() - startTime < 3){}
+        while(sim.getSimulationTime() - startTime < 1){}
         
-        Long floorHandle =  sim.getObject("/Floor");
+        Long floorHandle;
+        try{
+            floorHandle = sim.getObject("/Floor");
+            sim.removeModel(floorHandle);
+        } catch(RuntimeException ex){
+            System.out.println("No default floor to exclude");
+        }
+        floorHandle = sim.loadModel(System.getProperty("user.dir") + "/floor.ttm");
         List<Float> floorSize = sim.getShapeBB(floorHandle);
         floorSize.set(0, width);
         floorSize.set(1, heigth);
@@ -108,6 +129,8 @@ public class WS3DCoppelia {
         worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
         
         updateState();
+        startTime = sim.getSimulationTime();
+        while(sim.getSimulationTime() - startTime < 2){}
         
         Timer t = new Timer();
         WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
