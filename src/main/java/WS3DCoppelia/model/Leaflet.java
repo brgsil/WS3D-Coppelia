@@ -69,9 +69,9 @@ public class Leaflet extends Identifiable {
     
     public void updateProgress(Bag bag){
         boolean check = true;
-        for(ThingsType required : requirements.keySet()){
+        for(JewelTypes required : requirements.keySet()){
             int collected = bag.getTotalCountOf(required);
-            if(collected <= requirements.get(required))
+            if(collected < requirements.get(required))
                 check = false;
         }
         completed = check;

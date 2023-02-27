@@ -72,7 +72,7 @@ public class Agent extends Identifiable {
         List<Long> objectsInVision = new ArrayList<Long>();
         try {             
             //long agentScript = sim.getScript(sim.scripttype_childscript, agentHandle, "");
-            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript);
+            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score);
             pos = (List<Float>) response.get(0);
             ori = (List<Float>) response.get(1);
             fuel = (float) response.get(2);
@@ -91,7 +91,6 @@ public class Agent extends Identifiable {
                 thingsInVision.clear();
                 thingsInVision.addAll(thingsSeen);
             }
-            System.out.println(commandQueue.size());
             
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
@@ -111,20 +110,16 @@ public class Agent extends Identifiable {
                 executed.add(command);
                 switch (command){
                     case "move":
-                        System.out.println("Exec Move");
                         this.execMove((List<Float>) commandQueue.get(command));
                         break;
                     case "eat":
-                        System.out.println("Exec Eat");
                         this.execEatIt((Thing) commandQueue.get(command));
                         break;
                     case "rotate":
-                        System.out.println("Exec Rotate");
                         this.execRotate();
                         rotate = true;
                         break;
                     case "sackIt":
-                        System.out.println("Exec Sack");
                         this.execSackIt((Thing) commandQueue.get(command));
                         break;
                     case "deliver":
@@ -181,13 +176,14 @@ public class Agent extends Identifiable {
     
     public void sackIt(Thing thing){
         synchronized (commandQueue) {
-        commandQueue.put("sackIt", thing);
+            commandQueue.put("sackIt", thing);
         }
     }
     
     public void deliver(int leafletId){
         synchronized (commandQueue) {
-        commandQueue.put("deliver", leafletId);
+            System.out.println(String.format("Deliver leaflet %d", leafletId));
+            commandQueue.put("deliver", leafletId);
         }
     }
     
@@ -272,11 +268,14 @@ public class Agent extends Identifiable {
         }
 
         if (deliverable){
+            System.out.println("Delivering");
             score += leaflets[pos].getPayment();
             leaflets[pos].setDelivered(true);
             for(Entry<Constants.JewelTypes, Integer> requirement : leaflets[pos].getRequirements().entrySet()){
                 bag.removeItem(requirement.getKey(), requirement.getValue());
             }
+        } else{
+            System.out.println("Not completed");
         }
     }
     
