@@ -92,7 +92,9 @@ public class WS3DCoppelia {
     public void updateState(){
         synchronized(inWorldThings){
             List<Thing> excludedThings = inWorldThings.stream().filter(t->t.removed).collect(Collectors.toList());
+            List<Thing> notInitialized = inWorldThings.stream().filter(t->!t.isInitialized()).collect(Collectors.toList());
             inWorldThings.removeAll(excludedThings);
+            if(notInitialized.size() > 0) Thing.bulkInit(notInitialized, sim);
             for(Thing thg : inWorldThings){
                 thg.run();
             }

@@ -12,9 +12,11 @@ import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -65,6 +67,27 @@ public class Thing extends Identifiable {
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
             thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, category.color());
         } catch (CborException ex) {
+            Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void bulkInit(List<Thing> things, RemoteAPIObjects._sim sim_){
+        List<Integer> shapes = things.stream().map(t->t.getShape()).collect(Collectors.toList());
+        List<List<Float>> poss = things.stream().map(t->t.getPos()).collect(Collectors.toList());
+        List<List<Float>> sizes = things.stream().map(t->t.getSize()).collect(Collectors.toList());
+        List<List<Float>> colors = things.stream().map(t->t.getColor()).collect(Collectors.toList());
+               
+        try{
+            Long floorHandle =  sim_.getObject("/Floor");
+            Long script = sim_.getScript(sim_.scripttype_childscript, floorHandle, "");
+            ArrayList<Long> thingHandles = (ArrayList<Long>) sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors);
+            // System.out.println(sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors));
+            System.out.println(thingHandles);
+            for(int i = 0; i < things.size(); i++){
+                things.get(i).setHandle(thingHandles.get(i));
+                things.get(i).setInitialized();
+            }
+        } catch(CborException ex){
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -127,5 +150,29 @@ public class Thing extends Identifiable {
         return handleList.contains(thingHandle);
     }
 
+    public List<Float> getSize(){
+        List<Float> size;
+        if (category instanceof Constants.BrickTypes){
+            size = Arrays.asList(new Float[]{width, depth, Constants.BRICK_HEIGTH});
+        } else {
+            size = THING_SIZE;
+        }
+        return size;
+    } 
+
+    public List<Float> getColor(){
+        return category.color();
+    } 
     
+    public int getShape(){
+        return category.shape();
+    } 
+
+    public void setInitialized(){
+        this.initialized = true;
+    }
+
+    public void setHandle(long handle){
+        this.thingHandle = handle;
+    }
 }
