@@ -5,6 +5,7 @@
 package WS3DCoppelia.model;
 
 import WS3DCoppelia.util.Constants;
+import WS3DCoppelia.util.Constants.JewelTypes;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.io.IOException;
@@ -71,8 +72,23 @@ public class Agent extends Identifiable {
     public void updateState(List<Thing> inWorldThings){
         List<Long> objectsInVision = new ArrayList<Long>();
         try {             
-            //long agentScript = sim.getScript(sim.scripttype_childscript, agentHandle, "");
-            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score);
+            List<List<Integer>> leafletInfo = new ArrayList<>();
+            List<Integer> bagInfo = new ArrayList<>();
+            for (JewelTypes jewel : JewelTypes.values()){
+                bagInfo.add(bag.getTotalCountOf(jewel));
+            }
+            leafletInfo.add(bagInfo);
+            
+            for (Leaflet l : leaflets){
+                List<Integer> lInfo = new ArrayList<>();
+                for (JewelTypes jewel : JewelTypes.values()){
+                    lInfo.add(l.getRequiredAmountOf(jewel));
+                }
+                lInfo.add(l.isDelivered() ? 1:0);
+                lInfo.add(l.getPayment());
+                leafletInfo.add(lInfo);
+            }
+            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, leafletInfo);
             pos = (List<Float>) response.get(0);
             ori = (List<Float>) response.get(1);
             fuel = (float) response.get(2);

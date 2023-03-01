@@ -82,7 +82,7 @@ public class Thing extends Identifiable {
             Long script = sim_.getScript(sim_.scripttype_childscript, floorHandle, "");
             ArrayList<Long> thingHandles = (ArrayList<Long>) sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors);
             // System.out.println(sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors));
-            System.out.println(thingHandles);
+            // System.out.println(thingHandles);
             for(int i = 0; i < things.size(); i++){
                 things.get(i).setHandle(thingHandles.get(i));
                 things.get(i).setInitialized();
