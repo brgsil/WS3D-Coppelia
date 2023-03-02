@@ -76,11 +76,12 @@ public class Thing extends Identifiable {
         List<List<Float>> poss = things.stream().map(t->t.getPos()).collect(Collectors.toList());
         List<List<Float>> sizes = things.stream().map(t->t.getSize()).collect(Collectors.toList());
         List<List<Float>> colors = things.stream().map(t->t.getColor()).collect(Collectors.toList());
+        List<Integer> categories = things.stream().map(t->t.isFood() ? 1 : t.isJewel() ? 2 : t.isBrick() ? 3 : 0).collect(Collectors.toList());
                
         try{
             Long floorHandle =  sim_.getObject("/Floor");
             Long script = sim_.getScript(sim_.scripttype_childscript, floorHandle, "");
-            ArrayList<Long> thingHandles = (ArrayList<Long>) sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors);
+            ArrayList<Long> thingHandles = (ArrayList<Long>) sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors, categories);
             // System.out.println(sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors));
             // System.out.println(thingHandles);
             for(int i = 0; i < things.size(); i++){

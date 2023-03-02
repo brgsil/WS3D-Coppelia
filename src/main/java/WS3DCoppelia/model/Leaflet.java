@@ -35,7 +35,7 @@ public class Leaflet extends Identifiable {
         
         for (int i = 0; i< Constants.LEAFLET_NUMBER_OF_ITEMS; i++){
             //Select a random amount of jewels
-            int num = rng.nextInt(Constants.MAX_NUMBER_ITEMS_PER_COLOR);
+            int num = rng.nextInt(Constants.MAX_NUMBER_ITEMS_PER_COLOR - 1) + 1;
             
             requirements.put(JewelTypes.values()[list.get(i)], num);
             

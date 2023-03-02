@@ -94,7 +94,7 @@ public class WS3DCoppelia {
             List<Thing> excludedThings = inWorldThings.stream().filter(t->t.removed).collect(Collectors.toList());
             List<Thing> notInitialized = inWorldThings.stream().filter(t->!t.isInitialized()).collect(Collectors.toList());
             inWorldThings.removeAll(excludedThings);
-            if(notInitialized.size() > 0) Thing.bulkInit(notInitialized, sim);
+            if(notInitialized.size() > 2) Thing.bulkInit(notInitialized, sim);
             for(Thing thg : inWorldThings){
                 thg.run();
             }
@@ -129,6 +129,14 @@ public class WS3DCoppelia {
         sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
         
         worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+
+        Long brickTreeHandle = sim.createDummy(0.01);
+        sim.setObjectAlias(brickTreeHandle, "Bricks");
+        Long foodTreeHandle = sim.createDummy(0.01);
+        sim.setObjectAlias(foodTreeHandle , "Foods");
+        Long jewelTreeHandle = sim.createDummy(0.01);
+        sim.setObjectAlias(jewelTreeHandle , "Jewels");
+        
         
         updateState();
         startTime = sim.getSimulationTime();

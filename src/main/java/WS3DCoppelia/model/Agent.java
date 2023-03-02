@@ -262,10 +262,12 @@ public class Agent extends Identifiable {
     
     private void execSackIt(Thing thing){
         try {
-            thing.remove();
-            bag.insertItem(thing.thingType(), 1);
-            for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
-                leaflets[i].updateProgress(bag);
+            if (!thing.removed){
+                thing.remove();
+                bag.insertItem(thing.thingType(), 1);
+                for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+                    leaflets[i].updateProgress(bag);
+                }
             }
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
